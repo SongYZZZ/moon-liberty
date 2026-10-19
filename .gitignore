@@ -1,0 +1,8 @@
+_build/
+.mooncakes/
+.tools/
+.venv/
+artifacts/
+*.mbti
+*.pyc
+__pycache__/

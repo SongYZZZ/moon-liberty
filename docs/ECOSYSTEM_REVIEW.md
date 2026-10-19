@@ -6,7 +6,7 @@
 
 1. [官方十月活动](https://moonbitlang.github.io/Hackathon2026/)及其公开源码，确认允许原创、移植和生态建设，但要求实质贡献并拒绝重复拆分。
 2. [Mooncakes](https://mooncakes.io/)：运行 moon update，检查本机刷新的 3124 个公开包索引 JSON 中的名称、描述和关键词。检索 liberty、nldm、standard-cell、timing-library、cell_rise；未找到同定位包。索引是时间点快照，网站没有提供“所有将来选题不重复”保证。
-3. GitHub 仓库和代码查询，未找到同定位的公开 MoonBit 领域实现：
+3. GitHub 仓库和代码查询，除本项目外，未找到同定位的公开 MoonBit 领域实现：
    - gh search repos 'liberty language:MoonBit'
    - gh search repos 'liberty MoonBit in:name,description,readme'
    - gh search repos 'nldm moonbit'

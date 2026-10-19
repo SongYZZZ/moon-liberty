@@ -17,7 +17,7 @@
 | 公开查询 | moon search liberty --json 返回 version 0.1.0、summary_version 0.1.0、is_summary_current=true |
 | 独立消费者 | 在全新独立项目 moon add 下载 0.1.0，check --deny-warn、run、JS check 通过 |
 | 原生例子 | examples/inspect、examples/query 已实际运行 |
-| 源码规模 | 36 个 .mbt 文件，4437 行非空且非整行注释的 MoonBit；包括测试，排除依赖、生成文件和构建输出，不将数据文件计入代码 |
+| 源码规模 | 36 个 .mbt 文件，4442 行非空且非整行注释的 MoonBit；包括测试，排除依赖、生成文件和构建输出，不将数据文件计入代码 |
 | 提交历史 | 此报告之前 main 已有 13 次实际功能、修复、验证及文档提交；脚本要求至少 11 次 |
 | 开源及来源 | 根 Apache-2.0 LICENSE / NOTICE，第三方数据与可选独立工具分别记录 |
 | 身份一致 | README、PROJECT_APPLICATION.md、moon.mod 与 Git origin 指向 SongYZZZ/moon-liberty |

@@ -16,4 +16,4 @@
 
 **拟实现范围与当前基础：** 已实现有界解析与扩展保留、模型和语义检查、布尔函数与真值表、标量/一维/二维 NLDM 校验及插值、四类组合时序查询、结构化差异、单元提取和七个命令。205 项原生测试通过；IHP 公开库的 84 个单元通过当前规则检查，另以独立解析器完成 312 次数值核对及往返验证。后续完善更多公开样本和诊断；不承诺完整 STA 或工艺签核。
 
-**原创及参考说明：** 原创实现，非移植项目，许可证 Apache-2.0。IHP Open PDK 仅作为 Apache-2.0 测试数据，来源 https://github.com/IHP-GmbH/IHP-Open-PDK 。独立对照工具 libertyParser（https://github.com/liyanqing1987/libertyParser ，GPL-2.0）仅用于测试，不作为运行依赖或代码来源。仓库已含不少于 10 次有实际功能、修复或验证内容的有效提交；实现范围、示例、来源及验证记录均可在仓库核查。
+**原创及参考说明：** 原创实现，非移植项目，许可证 Apache-2.0。IHP Open PDK 仅作为 Apache-2.0 测试数据，来源 https://github.com/IHP-GmbH/IHP-Open-PDK 。独立对照工具 libertyParser（https://github.com/liyanqing1987/libertyParser ，GPL-2.0）仅用于测试，不作为运行依赖或代码来源。仓库已含超过 10 次有实际功能、修复或验证内容的有效提交；实现范围、示例、来源及验证记录均可在仓库核查。

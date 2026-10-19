@@ -92,7 +92,7 @@ def main():
         assert remote.removesuffix(".git") == REPOSITORY, remote
         commits = int(subprocess.run(["git", "rev-list", "--count", "HEAD"], cwd=ROOT,
                                     text=True, capture_output=True, check=True).stdout)
-        assert commits >= 10, commits
+        assert commits >= 11, commits
         report["commits"] = commits
     if args.benchmark:
         real = ROOT / "tests/fixtures/ihp-sg13g2-typ.lib"

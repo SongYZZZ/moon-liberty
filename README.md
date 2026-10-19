@@ -45,7 +45,7 @@ moon run cmd/moon-liberty -- truth "!(A & B)" --json
 
 ## 用作 MoonBit 库
 
-项目名为 SongYZZZ/moon-liberty；可用 moon add 添加已发布版本，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
+项目名为 SongYZZZ/moon-liberty；0.1.0 已发布至 Mooncakes，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
 
 ```moonbit
 import {
@@ -87,3 +87,5 @@ oracle 获取脚本需要 gh 及 GitHub API 认证；不需要安装第三方 Py
 请提供 SDK 版本、最小可公开的 .lib 样本、实际命令和诊断；敏感工艺数据请先脱敏。行为修复应有针对性回归用例。运行 moon fmt、moon check --deny-warn 和相关测试后提交，范围扩展需同步支持矩阵。
 
 测试数据来自 Apache-2.0 的 IHP Open PDK，原始头部、固定版本和 SHA-256 均保留。它不是本项目移植来源，也不能证明工艺资格或完整标准符合性。详见 [NOTICE](NOTICE) 和 [LICENSE](LICENSE)。
+
+[发布消费者验证](docs/CONSUMER.md) · [完整自查报告](docs/FINAL_REVIEW.md)

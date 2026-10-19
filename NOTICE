@@ -1,0 +1,19 @@
+MoonLiberty
+Copyright 2026 宋永振
+
+The implementation is original MoonBit code. No Liberty implementation source
+from another project is copied, vendored, ported, or used as a runtime library.
+
+Third-party test data:
+  IHP-GmbH/IHP-Open-PDK
+  Copyright 2024 IHP PDK Authors
+  Apache License 2.0
+  Commit: 5e6d592e4002946a4616f798c357f0f3c06cf3b6
+  Original path:
+  ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib
+  Local path: tests/fixtures/ihp-sg13g2-typ.lib
+  SHA-256: 7677a8918689f452e80405ad16a83e744709342574f2aedcc507c2758986b396
+
+The upstream file is unmodified and retains its original copyright and license
+header. It is used solely as public interoperability data, not as evidence
+of foundry qualification or signoff correctness.

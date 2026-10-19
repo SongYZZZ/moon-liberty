@@ -92,6 +92,34 @@ pub fn write_liberty(
   writer.group(group, 0)
   let output = writer.output.to_string()
   // Also validate caller-constructed ASTs and enforce output character budgets.
-  ignore(parse_liberty(output, limits~))
+  let reparsed = parse_liberty(output, limits~)
+  if !same_syntax(group, reparsed) {
+    raise failure(
+      "InvalidAst",
+      "writer would change caller-constructed syntax",
+      group.position,
+    )
+  }
   output
+}
+
+///|
+fn same_syntax(before : Group, after : Group) -> Bool {
+  if before.kind != after.kind ||
+    before.arguments != after.arguments ||
+    before.items.length() != after.items.length() {
+    return false
+  }
+  for i in 0..<before.items.length() {
+    let equal = match (before.items[i], after.items[i]) {
+      (Attribute(a, x, _), Attribute(b, y, _)) => a == b && x == y
+      (Complex(a, x, _), Complex(b, y, _)) => a == b && x == y
+      (Section(a), Section(b)) => same_syntax(a, b)
+      _ => false
+    }
+    if !equal {
+      return false
+    }
+  }
+  true
 }

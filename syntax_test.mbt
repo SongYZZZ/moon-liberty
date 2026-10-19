@@ -215,3 +215,59 @@ test "duplicate attributes remain visible for semantic diagnostics" {
 test "quoted NUL is refused before parsing" {
   assert_eq(parse_error("library(x){comment:\"\u0000\";}"), "InvalidCharacter")
 }
+
+///|
+test "writer rejects a caller constructed value that injects another attribute" {
+  let root = @liberty.parse_liberty("library(x){a:1;}")
+  let pos = root.position
+  let forged = {
+    ..root,
+    items: [@liberty.Attribute("a", [@liberty.Word("1; injected: true")], pos)],
+  }
+  try @liberty.write_liberty(forged) catch {
+    @liberty.LibertyError(code, _, _) => assert_eq(code, "InvalidAst")
+  } noraise {
+    _ => fail("injected field must be rejected")
+  }
+}
+
+///|
+test "writer rejects caller constructed multi token bare atom" {
+  let root = @liberty.parse_liberty("library(x){a:1;}")
+  let forged = {
+    ..root,
+    items: [
+      @liberty.Attribute("a", [@liberty.Word("two words")], root.position),
+    ],
+  }
+  try @liberty.write_liberty(forged) catch {
+    @liberty.LibertyError(code, _, _) => assert_eq(code, "InvalidAst")
+  } noraise {
+    _ => fail("atom identity must be preserved")
+  }
+}
+
+///|
+test "writer rejects caller constructed attribute name injection" {
+  let root = @liberty.parse_liberty("library(x){a:1;}")
+  let forged = {
+    ..root,
+    items: [
+      @liberty.Attribute("extra:1; a", [@liberty.Word("1")], root.position),
+    ],
+  }
+  try @liberty.write_liberty(forged) catch {
+    @liberty.LibertyError(code, _, _) => assert_eq(code, "InvalidAst")
+  } noraise {
+    _ => fail("name injection must be rejected")
+  }
+}
+
+///|
+test "writer retains nested complex call atoms and quoted punctuation" {
+  let root = @liberty.parse_liberty(
+    "library(x){f(nested(a,b),\"; injected:1\");}",
+  )
+  let written = @liberty.write_liberty(root)
+  assert_eq(@liberty.write_liberty(@liberty.parse_liberty(written)), written)
+}

@@ -36,3 +36,21 @@ pub extend Token with Eq::{equal, not_equal}
 
 ///|
 pub extend Token with @debug.Debug::{to_repr}
+
+///|
+pub extend Atom with Eq::{equal, not_equal}
+
+///|
+pub extend Atom with @debug.Debug::{to_repr}
+
+///|
+pub extend Node with Eq::{equal, not_equal}
+
+///|
+pub extend Node with @debug.Debug::{to_repr}
+
+///|
+pub extend Group with Eq::{equal, not_equal}
+
+///|
+pub extend Group with @debug.Debug::{to_repr}

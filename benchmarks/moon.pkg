@@ -1,0 +1,4 @@
+import {
+  "SongYZZZ/moon-liberty" @liberty,
+  "moonbitlang/core/bench",
+} for "test"

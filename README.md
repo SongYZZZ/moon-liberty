@@ -1,8 +1,89 @@
 # MoonLiberty
 
-原创 MoonBit Liberty 标准单元库工具。项目正在实现有资源上限的解析、NLDM 查询和语义变更分析。
-仓库：https://github.com/SongYZZZ/moon-liberty
-作者：宋永振（SongYZZZ）。许可证：Apache-2.0。
+**MoonLiberty：芯片标准单元库的 Liberty 解析、NLDM 时序查询与变更审计工具。**
 
-本仓库与 MoonDBC、MoonFirmware 独立，不复用其领域实现或申报书。
-当前仅对已经完成的代码报告验证结果，最终范围会与测试和一页申请书同步核对。
+[GitHub 仓库](https://github.com/SongYZZZ/moon-liberty) · [正式项目申报书](PROJECT_APPLICATION.md) · [范围与限制](docs/SUPPORT.md) · [验证记录](docs/TESTING.md) · [生态检索](docs/ECOSYSTEM_REVIEW.md)
+
+原创 MoonBit 基础库与原生命令行，面向 PDK 维护者、EDA 工具作者和数字电路教学。将文本库转成可检查的结构，按明确的物理单位查询延迟，并在库升级时指出具体字段、逻辑函数或时序表变化。实现使用 Apache-2.0；作者为宋永振（SongYZZZ）。
+
+## 可以实际完成的工作
+
+- 带行列位置和资源上限的 Liberty 词法、分组及属性解析，保留未知厂商属性和分组，确定性写出。
+- 单元、引脚、时序弧和模板建模；检查重复名称、无效数值、引脚引用、函数引用及表格形状。
+- 标量、一维和二维 NLDM 表校验及插值；组合弧查询把秒、法拉映射到声明的库单位，结果输出秒。
+- 布尔函数解析、求值和有输入数上限的真值表。
+- 按结构路径比较库：忽略注释、属性顺序及部分等价数值写法，保留未知字段的差异；选择单元时保留所有库级上下文。
+- 七个原生命令、JSON 输出及明确退出码；写文件默认拒绝覆盖，失败时不发布部分结果。
+
+本工具不是完整 STA、工艺签核或电气等价证明系统；格式化成功也不代表语义无误。CCS/ECSM/LVF、三维查表、总线展开等不在当前求值范围内，详见[支持矩阵](docs/SUPPORT.md)。
+
+## 快速运行
+
+使用 MoonBit SDK **0.10.14+7d59c7ec9** 和对应 core（CI 固定版本），原生后端需 C 工具链。所有命令从本仓库根目录运行：
+
+```powershell
+moon update
+moon test --target native --deny-warn
+moon build --release --deny-warn
+moon run cmd/moon-liberty -- inspect tests/fixtures/ihp-sg13g2-typ.lib --json
+moon run cmd/moon-liberty -- lint tests/fixtures/ihp-sg13g2-typ.lib --json
+moon run cmd/moon-liberty -- query tests/fixtures/ihp-sg13g2-typ.lib --cell sg13g2_inv_1 --pin Y --related A --table cell_rise --slew 1e-10 --load 2e-14 --json
+```
+
+公开 IHP SG13G2 样本的实际结果为 **84 单元、285 引脚、384 时序弧、1199 表格**，当前规则下 lint 为 0 错误、0 警告。上面的查询得到约 **1.1540884836886307e-10 秒**，未钳位、未外推。这个结果只表示该表的插值结果。
+
+格式化、比较、提取与布尔函数：
+
+```powershell
+moon run cmd/moon-liberty -- normalize tests/fixtures/basic.lib -o normalized.lib
+moon run cmd/moon-liberty -- diff tests/fixtures/basic.lib normalized.lib --json
+moon run cmd/moon-liberty -- extract tests/fixtures/ihp-sg13g2-typ.lib --cells sg13g2_inv_1 -o inv.lib
+moon run cmd/moon-liberty -- truth "!(A & B)" --json
+```
+
+已有输出需显式传入 --force。命令行退出码：0 为成功或无差异，1 为 lint 错误或发现差异，2 为参数、解析、查询或文件错误。可执行文件位于 _build/native/release/build/cmd/moon-liberty/moon-liberty.exe；Linux 的此版本 MoonBit 也使用 .exe 文件名。
+
+## 用作 MoonBit 库
+
+项目名为 SongYZZZ/moon-liberty；可用 moon add 添加已发布版本，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
+
+```moonbit
+import {
+  "SongYZZZ/moon-liberty" @liberty,
+}
+```
+
+主要 API：
+
+| 入口 | 用途 |
+| --- | --- |
+| tokenize / parse_liberty / write_liberty | 词法、通用 AST、保留扩展的写出 |
+| load_library / lint_library | 建模与结构、引用及表格检查 |
+| read_units / parse_unit | 声明单位解析，不猜测缺失单位 |
+| validate_table / lookup_table | 校验和标量、一维、二维插值 |
+| query_timing | 组合弧的秒/法拉输入和秒输出 |
+| parse_logic / evaluate_logic / truth_table | 布尔函数和有界真值表 |
+| compare_libraries / select_cells | 变更审计与上下文保留的单元提取 |
+
+库函数使用 LibertyError 报错，包含错误码、消息和位置；lint 返回含严重级别、结构路径和位置的 Finding。CLI 的异步 IO 与纯计算核心分包，核心无运行时领域依赖，可在 native、JS、Wasm GC 使用。[设计及数据契约](docs/DESIGN.md)说明返回值、单位、选择条件和差异含义。
+
+## 验证与独立核对
+
+原生 **205 项测试**通过；纯核心 **185 项测试**分别在 JS、Wasm GC 通过。另有 18 次 CLI 端到端执行检查。使用独立 Python Liberty 解析器对真实库核对结构清单、完整往返、单元提取，并核对 **12 个单元上的 312 次时序数值查询**。独立工具仅作为可选测试过程，未复制进 MoonBit 实现或运行时依赖。
+
+```powershell
+moon test --target js -p SongYZZZ/moon-liberty --deny-warn
+moon test --target wasm-gc -p SongYZZZ/moon-liberty --deny-warn
+python scripts/verify.py --executable _build/native/release/build/cmd/moon-liberty/moon-liberty.exe --identity
+pwsh scripts/fetch-oracle.ps1
+python scripts/oracle_check.py --executable _build/native/release/build/cmd/moon-liberty/moon-liberty.exe
+moon bench --target native -p SongYZZZ/moon-liberty/benchmarks
+```
+
+oracle 获取脚本需要 gh 及 GitHub API 认证；不需要安装第三方 Python 包。测试工具版本、许可证、命令、实测性能和限制见[验证记录](docs/TESTING.md)与[来源说明](docs/REFERENCES.md)。仓库 CI 会重复严格编译、三后端测试、CLI 验收与独立核对。
+
+## 贡献与问题反馈
+
+请提供 SDK 版本、最小可公开的 .lib 样本、实际命令和诊断；敏感工艺数据请先脱敏。行为修复应有针对性回归用例。运行 moon fmt、moon check --deny-warn 和相关测试后提交，范围扩展需同步支持矩阵。
+
+测试数据来自 Apache-2.0 的 IHP Open PDK，原始头部、固定版本和 SHA-256 均保留。它不是本项目移植来源，也不能证明工艺资格或完整标准符合性。详见 [NOTICE](NOTICE) 和 [LICENSE](LICENSE)。

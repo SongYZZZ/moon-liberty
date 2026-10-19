@@ -1,0 +1,10 @@
+import {
+  "SongYZZZ/moon-liberty" @liberty,
+  "SongYZZZ/moon-liberty/cli",
+  "moonbitlang/async",
+  "moonbitlang/async/stdio",
+  "moonbitlang/core/env",
+  "moonbitlang/x/sys",
+}
+
+pkgtype(kind: "executable")

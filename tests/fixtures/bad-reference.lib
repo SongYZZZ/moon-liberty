@@ -1,0 +1,15 @@
+library (bad) {
+  time_unit : "1ns";
+  capacitive_load_unit (1, pf);
+  cell (INV) {
+    area : -1;
+    pin (Y) {
+      direction : output;
+      function : "MISSING";
+      timing () {
+        related_pin : "NO_PIN";
+        cell_rise (scalar) { values ("0.1"); }
+      }
+    }
+  }
+}

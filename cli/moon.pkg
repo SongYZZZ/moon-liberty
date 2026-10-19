@@ -1,0 +1,11 @@
+import {
+  "SongYZZZ/moon-liberty" @liberty,
+  "moonbitlang/async/fs",
+  "moonbitlang/async/stdio",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/env",
+}
+
+import {
+  "moonbitlang/async",
+} for "wbtest"

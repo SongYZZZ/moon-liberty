@@ -1,0 +1,28 @@
+library (demo_typical) {
+  delay_model : table_lookup;
+  time_unit : "1ns";
+  capacitive_load_unit (1, pf);
+  voltage_unit : "1V";
+  lu_table_template (delay_2x2) {
+    variable_1 : input_net_transition;
+    variable_2 : total_output_net_capacitance;
+    index_1 ("0.01, 0.11");
+    index_2 ("0.001, 0.021");
+  }
+  cell (INV_X1) {
+    area : 2.0;
+    pin (A) { direction : input; capacitance : 0.002; }
+    pin (Y) {
+      direction : output;
+      function : "!A";
+      timing () {
+        related_pin : "A";
+        timing_type : combinational;
+        timing_sense : negative_unate;
+        cell_rise (delay_2x2) { values ("0.02, 0.06", "0.12, 0.16"); }
+        cell_fall (delay_2x2) { values ("0.01, 0.05", "0.11, 0.15"); }
+      }
+    }
+  }
+  cell (TIEHI) { area : 1.0; pin (Y) { direction : output; function : "1"; } }
+}

@@ -2,7 +2,12 @@
 async fn test_directory() -> String {
   let directory = "artifacts/test-files-" +
     random_suffix(@env.rand(12).unwrap())
-  @fs.mkdir(directory, recursive=true)
+  if !@fs.exists("artifacts") {
+    @fs.mkdir("artifacts") catch {
+      error => if !@fs.exists("artifacts") { raise error }
+    }
+  }
+  @fs.mkdir(directory)
   directory
 }
 

@@ -1,0 +1,3 @@
+{
+  "pins.inc": "pin (A) { direction : input; }\npin (Y) { direction : output; function : \"!A\"; timing () { related_pin : \"A\"; timing_type : combinational; cell_rise (scalar) { values (\"0.025\"); } } }\n"
+}

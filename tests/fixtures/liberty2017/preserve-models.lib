@@ -1,0 +1,57 @@
+/* Original structural regression case. Not a characterized or signoff library. */
+library (preserved_models) {
+  time_unit : "1ns";
+  capacitive_load_unit (1, pf);
+  define (audit_tag, cell, string);
+  define_group (audit_metadata, cell);
+  type (word4) {
+    base_type : array;
+    data_type : bit;
+    bit_width : 4;
+    bit_from : 3;
+    bit_to : 0;
+    downto : true;
+  }
+  lu_table_template (variation_template) {
+    variable_1 : input_net_transition;
+    index_1 ("0.01, 0.1");
+  }
+  cell (DFF_BUS) {
+    audit_tag : "preserve-and-inspect";
+    audit_metadata (origin) { note : "original test data"; }
+    bus (DATA) { bus_type : word4; direction : input; }
+    bundle (CONTROL) { members ("D CK"); direction : input; }
+    ff (IQ, IQN) { clocked_on : "CK"; next_state : "D"; }
+    pin (D) { direction : input; }
+    pin (CK) { direction : input; clock : true; }
+    pin (Q) {
+      direction : output;
+      function : "IQ";
+      timing () {
+        related_pin : "CK";
+        timing_type : rising_edge;
+        ocv_mean_shift_cell_rise (variation_template) {
+          values ("0.001, 0.002");
+        }
+        ocv_std_dev_cell_rise (variation_template) {
+          values ("0.003, 0.004");
+        }
+        output_current_rise (waveform_template) {
+          vector (waveform_template) {
+            reference_time : 0.0;
+            index_1 ("0.01");
+            index_2 ("0.002");
+            index_3 ("0.0, 0.01, 0.02");
+            values ("0.0, 0.001, 0.0");
+          }
+        }
+      }
+      internal_power () {
+        related_pin : "CK";
+        rise_power (scalar) { values ("0.1"); }
+        fall_power (scalar) { values ("0.2"); }
+      }
+    }
+    leakage_power () { value : 0.001; when : "D"; }
+  }
+}

@@ -1,0 +1,10 @@
+/* Original MoonLiberty regression input, Apache-2.0. */
+library (source_map_demo) {
+  time_unit : "1ns";
+  capacitive_load_unit (1, pf);
+  define (revision_tag, cell, string);
+  cell (INV_X1) {
+    revision_tag : "format-example";
+    include_file (pins.inc);
+  }
+}

@@ -26,10 +26,13 @@ pub async fn run(request : Request) -> Int {
       0
     }
     Version => {
-      @stdio.stdout.write("moon-liberty 0.1.0\n")
+      @stdio.stdout.write("moon-liberty 0.2.0\n")
       0
     }
     Run(config) => {
+      if config.command == "compat" || config.command == "expand" {
+        return standard_command(config)
+      }
       if config.command == "truth" {
         let expression = @liberty.parse_logic(config.inputs[0])
         let maximum = match config.options.get("--max-inputs") {
@@ -165,5 +168,70 @@ pub async fn run(request : Request) -> Int {
         }
       }
     }
+  }
+}
+
+///|
+async fn source_map(config : Config) -> Map[String, String] {
+  let result : Map[String, String] = Map([])
+  if config.options.get("--sources") is Some(path) {
+    let text = read_text(path)
+    let json = @json.parse(text) catch {
+      _ => raise usage("source map must be valid JSON: " + path)
+    }
+    guard json is Object(entries) else {
+      raise usage("source map must be a JSON object")
+    }
+    for name, value in entries {
+      guard value is String(body) else {
+        raise usage("source map values must be source text strings: " + name)
+      }
+      result[name] = body
+    }
+  }
+  result
+}
+
+///|
+async fn standard_command(config : Config) -> Int {
+  let standard = @liberty.parse_standard(config.options["--standard"])
+  let text = read_text(config.inputs[0])
+  let sources = source_map(config)
+  let root = @liberty.parse_liberty_sources(text, sources) catch {
+    @liberty.LibertyError(code, message, position) =>
+      raise @liberty.LibertyError(
+        code,
+        config.inputs[0] + ": " + message,
+        position,
+      )
+  }
+  if config.command == "compat" {
+    let report = @liberty.compatibility_report(root, standard~)
+    let errors = report.findings.filter(f => f.severity is Error).length()
+    let json = @liberty.compatibility_json(report)
+    print_result(config, json, json.stringify(indent=2) + "\n")
+    if errors == 0 {
+      0
+    } else {
+      1
+    }
+  } else {
+    let output = config.options["--output"]
+    write_text(
+      output,
+      @liberty.write_liberty(root),
+      config.flags.contains("--force"),
+    )
+    print_result(
+      config,
+      {
+        "status": "expanded",
+        "output": output.to_json(),
+        "target_standard": standard.label().to_json(),
+        "complete_standard_conformance": false,
+      },
+      "Wrote expanded library: " + output + "\n",
+    )
+    0
   }
 }

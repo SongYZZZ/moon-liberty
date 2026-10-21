@@ -1,0 +1,5 @@
+/* Original negative test: invalid declared integer. */
+library (bad_declared_type) {
+  define (revision_number, cell, integer);
+  cell (C) { revision_number : 1.5; }
+}

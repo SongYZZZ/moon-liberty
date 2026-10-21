@@ -43,14 +43,15 @@ pub fn parse_arguments(
     return Version
   }
   let command = args[0]
-  if !["inspect", "lint", "query", "diff", "normalize", "extract", "truth"].contains(
-      command,
-    ) {
+  if ![
+      "inspect", "lint", "query", "diff", "normalize", "extract", "truth", "compat",
+      "expand",
+    ].contains(command) {
     raise usage("unknown command: " + command)
   }
   let valued = [
     "--cell", "--pin", "--related", "--table", "--slew", "--load", "--policy", "--when",
-    "--cells", "--output", "-o", "--max-changes", "--max-inputs",
+    "--cells", "--output", "-o", "--max-changes", "--max-inputs", "--standard", "--sources",
   ]
   let options : Map[String, String] = Map([])
   let flags = []
@@ -115,7 +116,9 @@ pub fn parse_arguments(
   if inputs.length() != required {
     raise usage("\{command} needs \{required} input argument(s)")
   }
-  let writes = command == "normalize" || command == "extract"
+  let writes = command == "normalize" ||
+    command == "extract" ||
+    command == "expand"
   if writes && !options.contains("--output") {
     raise usage("use --output PATH for normalize/extract")
   }
@@ -124,6 +127,7 @@ pub fn parse_arguments(
   }
   for key, _ in options {
     let allowed = match key {
+      "--standard" | "--sources" => command == "compat" || command == "expand"
       "--output" => writes
       "--cells" => command == "extract"
       "--max-changes" => command == "diff"
@@ -133,6 +137,12 @@ pub fn parse_arguments(
     if !allowed {
       raise usage(key + " is not valid for " + command)
     }
+  }
+  if command == "compat" || command == "expand" {
+    guard options.get("--standard") is Some(standard) else {
+      raise usage("compat/expand requires --standard 2017.06")
+    }
+    ignore(@liberty.parse_standard(standard))
   }
   if command == "query" {
     for key in ["--cell", "--pin", "--related", "--table", "--slew", "--load"] {
@@ -164,8 +174,12 @@ pub fn parse_arguments(
 
 ///|
 pub fn help(command : String) -> String {
-  let prefix = "MoonLiberty 0.1.0\n"
+  let prefix = "MoonLiberty 0.2.0\n"
   let body = match command {
+    "compat" =>
+      "Usage: moon-liberty compat FILE --standard 2017.06 [--sources JSON] [--json]\nReport implemented format checks, roundtrip and evaluation coverage. No complete conformance claim.\n"
+    "expand" =>
+      "Usage: moon-liberty expand FILE --standard 2017.06 [--sources JSON] -o OUTPUT [--force] [--json]\nExpand include_file from an explicit JSON source-text map; no implicit file reads.\n"
     "inspect" =>
       "Usage: moon-liberty inspect FILE [--json]\nInventory cells, pins, arcs, tables and physical unit scales.\n"
     "lint" =>
@@ -181,7 +195,7 @@ pub fn help(command : String) -> String {
     "truth" =>
       "Usage: moon-liberty truth EXPR [--max-inputs N] [--json]\nEvaluate a Liberty Boolean expression over all input assignments; default maximum inputs is 12.\n"
     _ =>
-      "Usage: moon-liberty COMMAND [OPTIONS]\nCommands: inspect, lint, query, diff, normalize, extract, truth\nUse COMMAND --help. File writes require an explicit output and never overwrite without --force.\n"
+      "Usage: moon-liberty COMMAND [OPTIONS]\nCommands: inspect, lint, query, diff, normalize, extract, truth, compat, expand\nUse COMMAND --help. File writes require an explicit output and never overwrite without --force.\n"
   }
   prefix +
   body +

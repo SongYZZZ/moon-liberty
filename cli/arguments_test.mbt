@@ -108,3 +108,39 @@ test "truth table budget is explicitly capped" {
 test "missing option values cannot consume another option" {
   assert_eq(rejected(["normalize", "a.lib", "-o", "--force"]), "Usage")
 }
+
+///|
+test "compat and expand require an explicit standard target" {
+  assert_eq(rejected(["compat", "x.lib"]), "Usage")
+  assert_eq(rejected(["expand", "x.lib", "-o", "x.out"]), "Usage")
+}
+
+///|
+test "CLI standard options reject unrecognized editions" {
+  assert_eq(
+    rejected(["compat", "x.lib", "--standard", "latest"]),
+    "UnsupportedStandard",
+  )
+}
+
+///|
+test "compat accepts explicit sources while query rejects them" {
+  assert_true(
+    @cli.parse_arguments([
+      "compat", "x.lib", "--standard", "2017.06", "--sources", "sources.json",
+    ])
+    is Run(_),
+  )
+  assert_eq(rejected(["inspect", "x.lib", "--standard", "2017.06"]), "Usage")
+}
+
+///|
+test "expand is an explicit output command and allows force" {
+  assert_true(
+    @cli.parse_arguments([
+      "expand", "x.lib", "--standard", "2017.06", "-o", "expanded.lib", "--force",
+    ])
+    is Run(_),
+  )
+  assert_eq(rejected(["expand", "x.lib", "--standard", "2017.06"]), "Usage")
+}

@@ -131,9 +131,20 @@ fn attribute_value_valid(value_type : String, atoms : Array[Atom]) -> Bool {
     "string" => atom is Text(_)
     "boolean" => text == "true" || text == "false"
     "integer" => {
-      let value = finite_number(text) catch { _ => return false }
-      // Do not convert through Int: declared values may exceed the native Int range.
-      value == value.floor()
+      let start = if text.has_prefix("+") || text.has_prefix("-") {
+        1
+      } else {
+        0
+      }
+      if text.length() == start {
+        return false
+      }
+      for i = start; i < text.length(); i = i + 1 {
+        if text[i] < 48 || text[i] > 57 {
+          return false
+        }
+      }
+      true
     }
     "float" => {
       ignore(finite_number(text)) catch {

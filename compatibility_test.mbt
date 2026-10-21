@@ -212,3 +212,36 @@ test "compatibility JSON contains explicit complete conformance false" {
   assert_true(json.contains("\"complete_standard_conformance\":false"))
   assert_true(json.contains("\"target_standard\":\"Liberty 2017.06\""))
 }
+
+///|
+test "integer declarations do not round huge fractions into integers" {
+  assert_true(
+    format_codes("define(rank,cell,integer);cell(C){rank:9007199254740992.5;}").contains(
+      "DefinedAttributeType",
+    ),
+  )
+}
+
+///|
+test "integer declarations accept arbitrarily long signed digit literals" {
+  assert_eq(
+    format_codes(
+      "define(rank,cell,integer);cell(C){rank:-123456789012345678901234567890;}",
+    ),
+    [],
+  )
+}
+
+///|
+test "integer declarations reject decimal and exponent float spelling" {
+  assert_true(
+    format_codes("define(rank,cell,integer);cell(C){rank:1.0;}").contains(
+      "DefinedAttributeType",
+    ),
+  )
+  assert_true(
+    format_codes("define(rank,cell,integer);cell(C){rank:1e0;}").contains(
+      "DefinedAttributeType",
+    ),
+  )
+}

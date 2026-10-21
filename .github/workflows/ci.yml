@@ -24,6 +24,8 @@ jobs:
       - run: moon build --release --deny-warn
       - name: CLI acceptance and submission identity
         run: python3 scripts/verify.py --executable _build/native/release/build/cmd/moon-liberty/moon-liberty.exe --identity
+      - name: Standard edition and format/evaluation cases
+        run: python3 scripts/check-standard.py --executable _build/native/release/build/cmd/moon-liberty/moon-liberty.exe
       - name: Fetch fixed independent reference parser and license
         shell: pwsh
         env:
@@ -37,4 +39,5 @@ jobs:
           name: acceptance-evidence
           path: |
             artifacts/verification.json
+            artifacts/standard-cases.json
             artifacts/oracle/report.json

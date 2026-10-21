@@ -22,3 +22,7 @@ basic.lib 和 bad-reference.lib 为本项目自编合成测试数据。
 [liyanqing1987/libertyParser](https://github.com/liyanqing1987/libertyParser)，GPL-2.0，revision 77440f598eee8291ddf9393e397711645cf0ee11。由 fetch-oracle.ps1 下载到 Git 忽略的 .tools/oracle，连同其 LICENSE 保留，作为独立 Python 进程的测试输入来源；没有复制进提交的实现、发布包或运行时依赖。本项目的 oracle_check.py 为原创适配和数值核对脚本。调用仅使用完整文件解析接口，不使用参考工具带 shell 拼接的单元提取路径。
 
 对照范围是明确样本的结构与数值一致性，不等同于完整 Liberty 标准认证。不能把 Python 工具的已有功能声称为本项目原创发明。MoonLiberty 的交付价值是 MoonBit 可复用实现、显式单位与拒绝策略、可接入维护流程的检查和变更报告。
+
+## 格式标准基线（0.2.0 新增）
+
+Synopsys《Liberty User Guides and Reference Manual Suite》，Version 2017.06，June 2017。官方获取入口 https://www.synopsys.com/community/interoperability-programs/tap-in.html ，标准契约记录版本核对来源和授权边界。本仓库不分发手册或其大段文本；标准授权与本项目 Apache-2.0 独立。实现与所有新增案例为原创，引用格式和行为规范不等于移植现有领域源码。当前未获得官方认证，也未声称全部条目已经符合。

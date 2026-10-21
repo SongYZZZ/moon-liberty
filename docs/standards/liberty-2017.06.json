@@ -1,0 +1,188 @@
+{
+  "standard": "Liberty 2017.06",
+  "target_release": "1.0",
+  "complete_standard_conformance": false,
+  "inventory_scope": "family_navigation_not_exhaustive_manual_schema",
+  "rows": [
+    {
+      "id": "syntax",
+      "scope": "词法、值与语句",
+      "status": "partial",
+      "open_items": [
+        "全部 2017.06 词法边界与正反例闭环"
+      ],
+      "evidence": [
+        "lexer_test.mbt",
+        "syntax_test.mbt"
+      ]
+    },
+    {
+      "id": "includes",
+      "scope": "include 完整语句边界",
+      "status": "implemented_subset",
+      "open_items": [
+        "文件系统搜索路径属于调用方 IO 适配；更多跨工具样本"
+      ],
+      "evidence": [
+        "includes_test.mbt"
+      ]
+    },
+    {
+      "id": "declarations",
+      "scope": "define/define_group",
+      "status": "implemented_subset",
+      "open_items": [
+        "当前只收集库级声明；全部标准作用域与规则闭环"
+      ],
+      "evidence": [
+        "compatibility_test.mbt"
+      ]
+    },
+    {
+      "id": "library_templates",
+      "scope": "库配置、单位与模板",
+      "status": "partial",
+      "open_items": [
+        "所有标准模板类型、参数与引用检查"
+      ],
+      "evidence": [
+        "units_test.mbt",
+        "model_test.mbt"
+      ]
+    },
+    {
+      "id": "cell_pin",
+      "scope": "单元及引脚",
+      "status": "partial",
+      "open_items": [
+        "完整格式层属性枚举、类型与父组规则"
+      ],
+      "evidence": [
+        "validation_test.mbt"
+      ]
+    },
+    {
+      "id": "bus_bundle",
+      "scope": "总线、bundle 与 type",
+      "status": "preserved_only",
+      "open_items": [
+        "范围、展开、类型引用与成员规则"
+      ],
+      "evidence": [
+        "tests/fixtures/liberty2017/preserve-models.lib"
+      ]
+    },
+    {
+      "id": "sequential",
+      "scope": "ff/latch/statetable",
+      "status": "preserved_only",
+      "open_items": [
+        "所有状态描述和格式引用规则"
+      ],
+      "evidence": [
+        "tests/fixtures/liberty2017/preserve-models.lib"
+      ]
+    },
+    {
+      "id": "nldm",
+      "scope": "NLDM 时序表",
+      "status": "partial",
+      "open_items": [
+        "三维数据的完整格式层校验；全部轴枚举与模板规则"
+      ],
+      "evidence": [
+        "table_test.mbt",
+        "query_test.mbt"
+      ]
+    },
+    {
+      "id": "constraints",
+      "scope": "时序约束",
+      "status": "partial",
+      "open_items": [
+        "全部约束种类的格式层检查；CLI 数值求值不扩张"
+      ],
+      "evidence": [
+        "table_test.mbt"
+      ]
+    },
+    {
+      "id": "power",
+      "scope": "功耗及泄漏",
+      "status": "preserved_only",
+      "open_items": [
+        "所有功耗格式类型、父组与引用规则"
+      ],
+      "evidence": [
+        "tests/fixtures/liberty2017/preserve-models.lib"
+      ]
+    },
+    {
+      "id": "current_waveform",
+      "scope": "CCS/ECSM 波形",
+      "status": "preserved_only",
+      "open_items": [
+        "完整波形模板结构与引用规则；不做物理求值"
+      ],
+      "evidence": [
+        "tests/fixtures/liberty2017/preserve-models.lib"
+      ]
+    },
+    {
+      "id": "variation_lvf",
+      "scope": "OCV/LVF 与 2017.06 更新",
+      "status": "preserved_only",
+      "open_items": [
+        "全部该版本变化组类型与引用规则；不做统计求值"
+      ],
+      "evidence": [
+        "compatibility_test.mbt"
+      ]
+    },
+    {
+      "id": "noise_wire",
+      "scope": "噪声、线负载与互连",
+      "status": "preserved_only",
+      "open_items": [
+        "所选版本全部格式层规则和公开样本"
+      ],
+      "evidence": [
+        "syntax_test.mbt"
+      ]
+    },
+    {
+      "id": "memory_test",
+      "scope": "memory/test/pg 与其他标准族",
+      "status": "preserved_only",
+      "open_items": [
+        "参考手册每条分组/属性的规则记录与负例"
+      ],
+      "evidence": [
+        "syntax_test.mbt"
+      ]
+    },
+    {
+      "id": "extensions",
+      "scope": "厂商及合法自定义扩展",
+      "status": "partial",
+      "open_items": [
+        "标准条目与未分类扩展完整区分，不丢字段"
+      ],
+      "evidence": [
+        "compatibility_test.mbt"
+      ]
+    },
+    {
+      "id": "interop",
+      "scope": "跨工具与真实语料",
+      "status": "partial",
+      "open_items": [
+        "增加合法的多来源真实语料和版本特性覆盖"
+      ],
+      "evidence": [
+        "scripts/oracle_check.py",
+        "scripts/check-standard.py"
+      ]
+    }
+  ]
+}

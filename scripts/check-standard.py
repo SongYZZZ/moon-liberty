@@ -24,6 +24,17 @@ def main():
         checks += 1
         return json.loads(result.stdout) if json_output else result
 
+    matrix = json.loads((ROOT / "docs/standards/liberty-2017.06.json").read_text(encoding="utf-8"))
+    assert matrix["standard"] == "Liberty 2017.06"
+    assert matrix["complete_standard_conformance"] is False
+    rows = matrix["rows"]
+    assert len({row["id"] for row in rows}) == len(rows)
+    for row in rows:
+        assert row["status"] in {"partial", "implemented_subset", "preserved_only"}
+        assert row["open_items"] and row["evidence"]
+        assert all((ROOT / evidence).is_file() for evidence in row["evidence"])
+    for material in ("PROJECT_APPLICATION.md", "README.md", "docs/STANDARD_CONFORMANCE.md"):
+        assert "2017.06" in (ROOT / material).read_text(encoding="utf-8")
     profile = ["--standard", "2017.06", "--json"]
     source = FIXTURES / "include-main.lib"
     sources = FIXTURES / "sources.json"

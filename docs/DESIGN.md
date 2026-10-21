@@ -27,3 +27,6 @@ select_cells 保留指定 cell 与全部非 cell 库级项，避免遗失模板�
 read_text 先检查普通文件及字节上限，再读取固定长度并严格解码。write_text 在目标目录用随机名字独占创建暂存文件，写入、同步、关闭后改名，默认拒绝已有目标；--force 为显式替换。错误仅清理本次创建的临时文件，不清理其他用户文件。
 
 可执行程序退出码 0 表示成功或无差异；1 表示 lint 检出 error 或 diff 有变化；2 表示使用、格式、IO、歧义或不支持的求值错误。非零必须结合 stderr 或 lint/diff JSON 分析，不能把警告、越界拒绝和确实的库变化混为一类。
+
+## 0.2.0 标准层
+StandardEdition 固定到 Liberty2017_06。parse_fragment 和 parse_liberty_sources 在纯核心内按完整语句解析 include，不进行文本拼接；所有输入共用预算，拒绝嵌套 include。compatibility_report 校验库级扩展声明并报告格式/求值覆盖，完整符合性保持 false。CLI source map 是文件名到源码文本的 JSON，显式 IO 与领域解析分离。详细契约见 STANDARD_CONFORMANCE。

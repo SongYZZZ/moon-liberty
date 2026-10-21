@@ -4,6 +4,8 @@
 
 [GitHub 仓库](https://github.com/SongYZZZ/moon-liberty) · [正式项目申报书](PROJECT_APPLICATION.md) · [范围与限制](docs/SUPPORT.md) · [验证记录](docs/TESTING.md) · [生态检索](docs/ECOSYSTEM_REVIEW.md)
 
+**标准基线固定为 Synopsys Liberty 2017.06。**最终目标是该版本完整格式读写与格式层规则闭环；当前 0.2.0 仍为部分实现，完整符合性明确标为 false。[标准兼容契约](docs/STANDARD_CONFORMANCE.md)说明终点、缺口及与受限求值的关系，[复审说明](docs/RESUBMISSION_RESPONSE.md)说明本轮改动。
+
 原创 MoonBit 基础库与原生命令行，面向 PDK 维护者、EDA 工具作者和数字电路教学。将文本库转成可检查的结构，按明确的物理单位查询延迟，并在库升级时指出具体字段、逻辑函数或时序表变化。实现使用 Apache-2.0；作者为宋永振（SongYZZZ）。
 
 ## 可以实际完成的工作
@@ -13,7 +15,8 @@
 - 标量、一维和二维 NLDM 表校验及插值；组合弧查询把秒、法拉映射到声明的库单位，结果输出秒。
 - 布尔函数解析、求值和有输入数上限的真值表。
 - 按结构路径比较库：忽略注释、属性顺序及部分等价数值写法，保留未知字段的差异；选择单元时保留所有库级上下文。
-- 七个原生命令、JSON 输出及明确退出码；写文件默认拒绝覆盖，失败时不发布部分结果。
+- 显式标准版本 compat 报告、受控 include 展开、define/define_group 声明及类型检查。
+- 九个原生命令、JSON 输出及明确退出码；写文件默认拒绝覆盖，失败时不发布部分结果。
 
 本工具不是完整 STA、工艺签核或电气等价证明系统；格式化成功也不代表语义无误。CCS/ECSM/LVF、三维查表、总线展开等不在当前求值范围内，详见[支持矩阵](docs/SUPPORT.md)。
 
@@ -45,7 +48,7 @@ moon run cmd/moon-liberty -- truth "!(A & B)" --json
 
 ## 用作 MoonBit 库
 
-项目名为 SongYZZZ/moon-liberty；0.1.0 已发布至 Mooncakes，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
+项目名为 SongYZZZ/moon-liberty；0.2.0 为本轮源码版本；发布结果见完整自查报告，可通过 Mooncakes 获取已发布版本，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
 
 ```moonbit
 import {
@@ -53,10 +56,19 @@ import {
 }
 ```
 
+新增标准命令（其他命令见原有示例）：
+
+    moon run cmd/moon-liberty -- compat tests/fixtures/liberty2017/preserve-models.lib --standard 2017.06 --json
+    moon run cmd/moon-liberty -- expand tests/fixtures/liberty2017/include-main.lib --sources tests/fixtures/liberty2017/sources.json --standard 2017.06 -o expanded.lib
+
+[三个标准案例](docs/STANDARD_CASES.md)附有 13 次 CLI 执行断言。格式完整兼容的目标包含 CCS/LVF、总线、状态和功耗结构；当前对这些数据保留、审计并明确不求值。
+
 主要 API：
 
 | 入口 | 用途 |
 | --- | --- |
+| parse_standard / compatibility_report | 显式版本与已实现格式规则报告 |
+| parse_fragment / parse_liberty_sources | 完整语句片段与有界 include 展开 |
 | tokenize / parse_liberty / write_liberty | 词法、通用 AST、保留扩展的写出 |
 | load_library / lint_library | 建模与结构、引用及表格检查 |
 | read_units / parse_unit | 声明单位解析，不猜测缺失单位 |
@@ -69,7 +81,7 @@ import {
 
 ## 验证与独立核对
 
-原生 **205 项测试**通过；纯核心 **185 项测试**分别在 JS、Wasm GC 通过。另有 18 次 CLI 端到端执行检查。使用独立 Python Liberty 解析器对真实库核对结构清单、完整往返、单元提取，并核对 **12 个单元上的 312 次时序数值查询**。独立工具仅作为可选测试过程，未复制进 MoonBit 实现或运行时依赖。
+原生 **252 项测试**通过；纯核心 **228 项测试**分别在 JS、Wasm GC 通过。另有 18 次 CLI 端到端执行检查。使用独立 Python Liberty 解析器对真实库核对结构清单、完整往返、单元提取，并核对 **12 个单元上的 312 次时序数值查询**。独立工具仅作为可选测试过程，未复制进 MoonBit 实现或运行时依赖。
 
 ```powershell
 moon test --target js -p SongYZZZ/moon-liberty --deny-warn

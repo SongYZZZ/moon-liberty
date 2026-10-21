@@ -48,7 +48,7 @@ moon run cmd/moon-liberty -- truth "!(A & B)" --json
 
 ## 用作 MoonBit 库
 
-项目名为 SongYZZZ/moon-liberty；0.2.0 为本轮源码版本；发布结果见完整自查报告，可通过 Mooncakes 获取已发布版本，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
+项目名为 SongYZZZ/moon-liberty；0.2.0 已发布至 Mooncakes，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
 
 ```moonbit
 import {

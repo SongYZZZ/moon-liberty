@@ -17,3 +17,9 @@ Third-party test data:
 The upstream file is unmodified and retains its original copyright and license
 header. It is used solely as public interoperability data, not as evidence
 of foundry qualification or signoff correctness.
+
+Optional downloaded corpus (not vendored): Nangate/OpenROAD Apache-2.0
+research distribution; ASAP7 BSD-3-Clause; Yosys ISC. Fixed sources,
+SHA-256 and preserved license locations are in docs/standards/corpus.json.
+Test-only independent liberty-parser 0.0.29 is GPL-3.0-or-later and is
+installed separately; it is not part of this implementation or runtime.

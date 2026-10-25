@@ -1,0 +1,6 @@
+# Test-only GPL-3.0-or-later reader. No MoonBit/runtime dependency.
+liberty-parser==0.0.29
+numpy==2.2.6
+sympy==1.14.0
+mpmath==1.3.0
+lark==1.3.1

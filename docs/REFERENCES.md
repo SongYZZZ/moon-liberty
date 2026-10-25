@@ -26,3 +26,11 @@ basic.lib 和 bad-reference.lib 为本项目自编合成测试数据。
 ## 格式标准基线（0.2.0 新增）
 
 Synopsys《Liberty User Guides and Reference Manual Suite》，Version 2017.06，June 2017。官方获取入口 https://www.synopsys.com/community/interoperability-programs/tap-in.html ，标准契约记录版本核对来源和授权边界。本仓库不分发手册或其大段文本；标准授权与本项目 Apache-2.0 独立。实现与所有新增案例为原创，引用格式和行为规范不等于移植现有领域源码。当前未获得官方认证，也未声称全部条目已经符合。
+## 0.3.0 多来源测试输入与第二读取器
+
+固定来源、完整哈希及授权下载地址见 [corpus.json](standards/corpus.json)，步骤与结论见 [CORPUS](CORPUS.md)。数据不提交到本仓库或发布包；下载后保留完整版权头和上游许可证。
+
+- Nangate：OpenROAD-flow-scripts 的 nangate45，固定 64939f3717ad7c694199ba04cb98924b98022868。上游 README 标明 PDKv1.3_v2010_12.Apache.CCL 并附 Apache-2.0 LICENSE；原文件头中的 Nangate 标识/声明仍保留。不把此研究库称为可制造工艺。
+- ASAP7：同一固定 OpenROAD 分发版本，两份原文件及 ASU 的 BSD-3-Clause 授权文本；仅用作原始缺分号负例，不修补后冒充原始通过。
+- Yosys：5053d0e266d9e5f895211e39e6ee3a94cbba408a 的 tests/liberty/busdef.lib 与 dff.lib，ISC，COPYING 原文单独下载。这是上游合成测试而非 PDK。
+- Thomas Kramer liberty-parser 0.0.29：[主仓库](https://codeberg.org/tok/liberty-parser)，GPL-3.0-or-later；通过 PyPI 安装至忽略目录，保留分发元数据/许可证。源码分发 SHA-256 fe841322c3ff766a2f7629b30a75f65b669b045c398bc599fe36c2e56cd0d2fb。依赖 numpy 2.2.6、sympy 1.14.0、mpmath 1.3.0、lark 1.3.1 仅用于独立测试。没有把这些工具源码转换为本项目实现或作为产品依赖。

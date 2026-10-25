@@ -1,0 +1,65 @@
+{
+  "schema": "moonliberty.corpus.v1",
+  "immutable_sources": true,
+  "data_vendored": false,
+  "downloads": [
+    {
+      "file": "nangate45.lib",
+      "url": "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD-flow-scripts/64939f3717ad7c694199ba04cb98924b98022868/flow/platforms/nangate45/lib/NangateOpenCellLibrary_typical.lib",
+      "sha256": "8d540a4d4cf6d09d27c87ad067857a9c0c2eeb023ab7a56e058cd3113db4e9b1",
+      "classification": "real_research_library",
+      "license": "Apache-2.0 upstream distribution; original header retained"
+    },
+    {
+      "file": "NANGATE-LICENSE",
+      "url": "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD-flow-scripts/64939f3717ad7c694199ba04cb98924b98022868/flow/platforms/nangate45/LICENSE",
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+      "classification": "license",
+      "license": "Apache-2.0"
+    },
+    {
+      "file": "asap7-invbuf.lib",
+      "url": "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD-flow-scripts/64939f3717ad7c694199ba04cb98924b98022868/flow/platforms/asap7/lib/NLDM/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz",
+      "sha256": "a4ceb32e418e1aac8667e28fbd8e9e46baf520180be4db075598a4d7c681a56e",
+      "classification": "original_missing_semicolon_negative",
+      "license": "BSD-3-Clause",
+      "gzip": true,
+      "download_sha256": "8d6db2c2f83c3c162be54a5e102b2d379fcaaaef2db5f0b1d4152c395d01fea1"
+    },
+    {
+      "file": "asap7-seq.lib",
+      "url": "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD-flow-scripts/64939f3717ad7c694199ba04cb98924b98022868/flow/platforms/asap7/lib/NLDM/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib",
+      "sha256": "57a0b403485b99ebd676942af4673ac086b86c7c75fbdc3e5c0038501dd22ba3",
+      "classification": "original_missing_semicolon_negative",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "file": "ASAP7-LICENSE",
+      "url": "https://raw.githubusercontent.com/The-OpenROAD-Project/asap7sc7p5t_28/e5bd25da72cd297b8c0ec6f77600e0cbaa1124d0/license/LICENSE.lib",
+      "sha256": "a5b2f92319f509ae9678ade0d32e5fde23943f88e936a5ca6507c49c19fc0cf0",
+      "classification": "license",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "file": "yosys-bus.lib",
+      "url": "https://raw.githubusercontent.com/YosysHQ/yosys/5053d0e266d9e5f895211e39e6ee3a94cbba408a/tests/liberty/busdef.lib",
+      "sha256": "43ef839913735a5af1c90e9d32a063dba9578abdc0b6fe7dffba24b5b2fb9384",
+      "classification": "upstream_synthetic_regression",
+      "license": "ISC"
+    },
+    {
+      "file": "yosys-dff.lib",
+      "url": "https://raw.githubusercontent.com/YosysHQ/yosys/5053d0e266d9e5f895211e39e6ee3a94cbba408a/tests/liberty/dff.lib",
+      "sha256": "b4c0a9443e85f9b1c9c5fbbdbd416a29da8e89a90b8cd0bbd928ef7ca983aff3",
+      "classification": "upstream_synthetic_regression",
+      "license": "ISC"
+    },
+    {
+      "file": "YOSYS-LICENSE",
+      "url": "https://raw.githubusercontent.com/YosysHQ/yosys/5053d0e266d9e5f895211e39e6ee3a94cbba408a/COPYING",
+      "sha256": "6998b5724d4cb3f459d1c12b6bd0cdbfa9c949ef14d0fb6d7d97d97404e5b5f3",
+      "classification": "license",
+      "license": "ISC"
+    }
+  ]
+}

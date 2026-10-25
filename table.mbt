@@ -91,6 +91,13 @@ pub fn read_table(group : Group, template? : Group) -> Table raise LibertyError 
       group.position,
     )
   }
+  if template is Some(t) && t.name() != reference {
+    raise failure(
+      "TemplateMismatch",
+      "supplied template name differs from table reference",
+      group.position,
+    )
+  }
   if group.complex("index_3") != None ||
     (template is Some(t) && t.text("variable_3") != None) {
     raise failure(
@@ -135,6 +142,20 @@ pub fn read_table(group : Group, template? : Group) -> Table raise LibertyError 
   let rows = arguments.map(argument => {
     number_list(argument, position=group.position)
   })
+  if reference == "scalar" && (!x.is_empty() || !y.is_empty()) {
+    raise failure(
+      "TableShape",
+      "scalar template must not have axes",
+      group.position,
+    )
+  }
+  if y.is_empty() && rows.length() != 1 {
+    raise failure(
+      "TableShape",
+      "scalar and 1D tables require exactly one quoted row",
+      group.position,
+    )
+  }
   if !y.is_empty() &&
     (rows.length() != x.length() || rows.any(row => row.length() != y.length())) {
     raise failure(

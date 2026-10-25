@@ -26,3 +26,7 @@ Liberty 解析器在其他语言早已存在，不能宣传为全球新发明。
 
 ## 2026-10-21 补查
 GitHub 查询 liberty language:MoonBit 当前仅返回本仓库，Mooncakes 的 liberty 查询当前只返回本模块；未发现新增同定位公开实现。本项仍不覆盖未公开报名。
+
+## 2026-10-25 补查
+
+运行 moon search liberty/nldm/synopsys（limit 20/10/10），三次均只返回本模块。gh search repos 'liberty language:MoonBit' 仅返回 SongYZZZ/moon-liberty。网站补充查询没有发现同定位的其他实现。此次不把模糊关键词检索说成全部项目或全部未公开参赛名单的穷尽核验。

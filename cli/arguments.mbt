@@ -174,7 +174,7 @@ pub fn parse_arguments(
 
 ///|
 pub fn help(command : String) -> String {
-  let prefix = "MoonLiberty 0.2.0\n"
+  let prefix = "MoonLiberty 0.3.0\n"
   let body = match command {
     "compat" =>
       "Usage: moon-liberty compat FILE --standard 2017.06 [--sources JSON] [--json]\nReport implemented format checks, roundtrip and evaluation coverage. No complete conformance claim.\n"

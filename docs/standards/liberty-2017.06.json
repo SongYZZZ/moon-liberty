@@ -9,7 +9,7 @@
       "scope": "词法、值与语句",
       "status": "partial",
       "open_items": [
-        "全部 2017.06 词法边界与正反例闭环"
+        "全部 2017.06 词法边界与正反例闭环，包括全部标识符形式和其他根结构"
       ],
       "evidence": [
         "lexer_test.mbt",
@@ -47,7 +47,8 @@
       ],
       "evidence": [
         "units_test.mbt",
-        "model_test.mbt"
+        "model_test.mbt",
+        "standard_rules_test.mbt"
       ]
     },
     {
@@ -58,29 +59,34 @@
         "完整格式层属性枚举、类型与父组规则"
       ],
       "evidence": [
-        "validation_test.mbt"
+        "validation_test.mbt",
+        "standard_rules_test.mbt"
       ]
     },
     {
       "id": "bus_bundle",
       "scope": "总线、bundle 与 type",
-      "status": "preserved_only",
+      "status": "partial",
       "open_items": [
-        "范围、展开、类型引用与成员规则"
+        "全部总线/bundle 属性规则、默认范围推导、自定义命名、向量展开和多名引脚领域建模"
       ],
       "evidence": [
-        "tests/fixtures/liberty2017/preserve-models.lib"
+        "tests/fixtures/liberty2017/preserve-models.lib",
+        "standard_rules_test.mbt",
+        "docs/standards/implemented-rules.json"
       ]
     },
     {
       "id": "sequential",
       "scope": "ff/latch/statetable",
-      "status": "preserved_only",
+      "status": "partial",
       "open_items": [
-        "所有状态描述和格式引用规则"
+        "必需属性、完整状态语义/引用、向量 bank 表达式及全部反例"
       ],
       "evidence": [
-        "tests/fixtures/liberty2017/preserve-models.lib"
+        "tests/fixtures/liberty2017/preserve-models.lib",
+        "standard_rules_test.mbt",
+        "docs/standards/implemented-rules.json"
       ]
     },
     {
@@ -92,7 +98,8 @@
       ],
       "evidence": [
         "table_test.mbt",
-        "query_test.mbt"
+        "query_test.mbt",
+        "standard_rules_test.mbt"
       ]
     },
     {
@@ -131,12 +138,13 @@
     {
       "id": "variation_lvf",
       "scope": "OCV/LVF 与 2017.06 更新",
-      "status": "preserved_only",
+      "status": "partial",
       "open_items": [
         "全部该版本变化组类型与引用规则；不做统计求值"
       ],
       "evidence": [
-        "compatibility_test.mbt"
+        "compatibility_test.mbt",
+        "standard_rules_test.mbt"
       ]
     },
     {

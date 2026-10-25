@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.0 — 2026-10-25
+
+Add 18 traceable standard-rule families for selected group/attribute, template,
+table, bus and sequential structures. Validate scalar through 3-D table format
+data independently of numerical evaluation, including thirty 2017.06 LVF moment
+table kinds. Full standard conformance remains false and explicitly non-exhaustive.
+
+Correct Liberty XOR-before-AND Boolean precedence and support quoted numeric pin
+names. Preserve exact decimal differences beyond Double precision and related-pin
+order. Accept unquoted bus ranges, reject swallowed attribute separators, enforce
+writer allocation budgets, and refuse unsupported SI delay models and negative
+transition values. Add independent Nangate/Yosys roundtrips and 72 Nangate numeric
+queries; retain unmodified ASAP7 missing-semicolon inputs as negative cases.
+
 ## 0.2.0 — 2026-10-21
 
 Declare Liberty 2017.06 as the fixed compatibility target. Add bounded include resolution, extension declaration/type checks, exact integer literal validation, compat/expand CLI commands, executable format/evaluation boundary cases and a versioned conformance roadmap. Full standard conformance remains incomplete and is reported separately from implemented checks.

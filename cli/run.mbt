@@ -26,7 +26,7 @@ pub async fn run(request : Request) -> Int {
       0
     }
     Version => {
-      @stdio.stdout.write("moon-liberty 0.2.0\n")
+      @stdio.stdout.write("moon-liberty 0.3.0\n")
       0
     }
     Run(config) => {

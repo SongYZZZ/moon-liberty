@@ -28,7 +28,7 @@
 | 原创与授权 | 实现 Apache-2.0；IHP/Nangate/ASAP7/Yosys 及两份 GPL 测试读取器分别披露；无第三方 Liberty 实现源码复制或领域运行库依赖；不分发标准手册 |
 | 公开生态重复检索 | 2026-10-25 的 moon search liberty/nldm/synopsys 仅返回本模块，GitHub liberty language:MoonBit 仅本仓库；未公开项目不可穷尽核验 |
 | 规模与仓库整洁 | 47 个 .mbt，7068 行有效代码，其中实现 4661、测试 2407；外部工具、数据、构建、缓存不计入；依赖/下载/产物均忽略 |
-| 发布与远程 CI | 0.3.0 的发布、消费者及最终远程 CI 结果在下方完成记录追加，不用旧版通过记录代替本版 |
+| 发布与远程 CI | 0.3.0 发布成功；47 个发布源码文件与本版一致；三后端独立消费者通过；672818f 的完整远程 CI 通过，详见下方 |
 
 ## 本轮已修复的实质问题
 
@@ -58,3 +58,13 @@
 - artifacts/verification.json、standard-cases.json、oracle/report.json、corpus/report.json：运行生成的 JSON；CI 上传同名证据。
 
 报名剩余次数、群身份和官方表单提交由参赛者按真实记录确认。未经授权不发送邮件或群消息。历史 0.2.0 自查保留在 history/FINAL_REVIEW_0_2.md。
+
+## 0.3.0 发布、独立读者与远程完成记录
+
+- 发布源码基准：672818f0b9fc4a23db886132245502738566aa6e；moon publish 返回 200 OK，压缩包不含 .tools、缓存或构建目录。归档 SHA-256 cdd40bfde51d284a48987696ba361e6ea3b4a4139fed670a108daa0039bc8e20。
+- [完整远程 CI](https://github.com/SongYZZZ/moon-liberty/actions/runs/40179729381) 已成功，包括三后端、18 次原 CLI、21 次标准 CLI、IHP 与新增语料独立对照及证据上传。此链接对应发布源码基准；后续材料澄清提交在 Actions 单独验证，不把历史成功套到未知新代码上。
+- 从 Mooncakes 精确下载 0.3.0 的独立消费者通过 native 实际运行、JS/Wasm GC 检查；全部 47 个 .mbt 与发布源码相同。详细代码见 CONSUMER.md。
+- 按 doc-coauthoring 技能做无对话上下文的独立读者审查；读者能区分固定版本、完整终点、未完成状态、格式/求值边界与统计。已修复其指出的 compat 退出码遗漏、场景必须分别执行 compat/lint、案例复现入口不就近等问题。补充实际运行场景 C 的 normalize/diff/extract/拒绝查询，预期退出码为 0/0/0/2。
+- 本轮增加八次实质功能/修复/语料/版本材料提交至发布基准；另以后续提交保存发布证据和读者修正。没有空提交、重复提交或强制推送改写历史。
+
+发布及工程验证完成不消除上述完整格式承诺缺口。本报告仍不判定官方终审通过。

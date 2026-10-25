@@ -1,6 +1,6 @@
 # 2017.06 兼容与求值边界案例
 
-2026-10-21 实际运行。以下输入为本项目原创结构/反例数据，Apache-2.0；不是来自手册的复制示例，也不是表征完成的工艺库，不能证明完整标准符合性。
+2026-10-25 按 0.3.0 重新实际运行。以下输入为本项目原创结构/反例数据，Apache-2.0；不是来自手册的复制示例，也不是表征完成的工艺库，不能证明完整标准符合性。
 
 ## A：完整语句 include 与单位化查询
 
@@ -10,6 +10,7 @@ include-main.lib 在 cell 内引用 pins.inc；sources.json 显式提供两引�
 
 ```powershell
 moon run cmd/moon-liberty -- expand tests/fixtures/liberty2017/include-main.lib --sources tests/fixtures/liberty2017/sources.json --standard 2017.06 -o expanded.lib
+moon run cmd/moon-liberty -- compat expanded.lib --standard 2017.06 --json
 moon run cmd/moon-liberty -- lint expanded.lib --json
 moon run cmd/moon-liberty -- query expanded.lib --cell INV_X1 --pin Y --related A --table cell_rise --slew 1e-11 --load 1e-15 --json
 ```
@@ -28,9 +29,20 @@ preserve-models.lib 包含 bus、bundle、ff、功耗、OCV/LVF、电流波形�
 
 ## 自动复现
 
+场景 C 的独立命令（前三步预期退出 0，最后一步预期退出 2 并给出不支持的查询错误）：
+
+```powershell
+moon run cmd/moon-liberty -- normalize tests/fixtures/liberty2017/preserve-models.lib -o models-normalized.lib
+moon run cmd/moon-liberty -- diff tests/fixtures/liberty2017/preserve-models.lib models-normalized.lib --json
+moon run cmd/moon-liberty -- extract tests/fixtures/liberty2017/preserve-models.lib --cells DFF_BUS -o models-selected.lib --json
+moon run cmd/moon-liberty -- query tests/fixtures/liberty2017/preserve-models.lib --cell DFF_BUS --pin Q --related CK --table output_current_rise --slew 1e-11 --load 1e-15 --json
+```
+
+提取保留指定单元及库级 type、模板与扩展声明；这些结构处理不代表全部格式语义已通过。上面输出已存在时显式添加 --force。场景 A 的兼容、lint、查询预期均退出 0，场景 B 预期退出 1。
+
 ```powershell
 moon build --release --deny-warn
 python scripts/check-standard.py --executable _build/native/release/build/cmd/moon-liberty/moon-liberty.exe
 ```
 
-本次 13 次 CLI 执行断言全部通过，报告为 artifacts/standard-cases.json。除上述三个场景，还验证错误 JSON 源映射、嵌套 include 拒绝、保留字段、完整符合性字段恒为 false。持续集成重复执行。
+本次自动脚本 21 次 CLI 执行断言全部通过，报告为 artifacts/standard-cases.json。除上述三个场景，还验证错误 JSON 源映射、嵌套 include 拒绝、保留字段、完整符合性字段恒为 false，以及总线、状态表、LVF/模板、负转换时间等八类格式反例。持续集成重复执行。

@@ -44,7 +44,7 @@ moon run cmd/moon-liberty -- extract tests/fixtures/ihp-sg13g2-typ.lib --cells s
 moon run cmd/moon-liberty -- truth "!(A & B)" --json
 ```
 
-已有输出需显式传入 --force。命令行退出码：0 为成功或无差异，1 为 lint 错误或发现差异，2 为参数、解析、查询或文件错误。可执行文件位于 _build/native/release/build/cmd/moon-liberty/moon-liberty.exe；Linux 的此版本 MoonBit 也使用 .exe 文件名。
+已有输出需显式传入 --force。命令行退出码：0 为成功或无差异，1 为 lint/compat 检查发现错误或 diff 发现差异，2 为参数、解析、查询或文件错误。可执行文件位于 _build/native/release/build/cmd/moon-liberty/moon-liberty.exe；Linux 的此版本 MoonBit 也使用 .exe 文件名。
 
 ## 用作 MoonBit 库
 

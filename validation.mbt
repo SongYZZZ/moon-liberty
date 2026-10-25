@@ -271,6 +271,16 @@ pub fn lint_library(library : Library) -> Array[Finding] {
           )
         }
         for table in arc.tables {
+          if ["rise_transition", "fall_transition"].contains(table.kind) &&
+            table.values.any(value => value < 0.0) {
+            add_finding(
+              findings,
+              "NegativeTransition",
+              arc_path + "/" + table.kind,
+              "transition table values must be nonnegative",
+              table.position,
+            )
+          }
           validate_table(table) catch {
             error => findings.push(finding(error, arc_path + "/" + table.kind))
           }

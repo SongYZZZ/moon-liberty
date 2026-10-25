@@ -212,6 +212,13 @@ fn Parser::node(self : Parser, depth : Int) -> Node raise LibertyError {
     let mut nesting = 0
     while !self.is_symbol(";") {
       let token = self.peek()
+      if self.is_symbol(":") && nesting == 0 {
+        raise failure(
+          "MissingSemicolon",
+          "unexpected attribute separator before ;",
+          token.position,
+        )
+      }
       if token.kind == End || self.is_symbol("}") || self.is_symbol("{") {
         raise failure(
           "MissingSemicolon",

@@ -45,6 +45,14 @@ pub fn query_timing(
   condition? : String,
   policy? : RangePolicy = Reject,
 ) -> TimingQuery raise LibertyError {
+  if library.source.text("delay_model") is Some(model) &&
+    model != "table_lookup" {
+    raise failure(
+      "UnsupportedDelayModel",
+      "SI queries require table_lookup delay_model",
+      library.source.position,
+    )
+  }
   if !["cell_rise", "cell_fall", "rise_transition", "fall_transition"].contains(
       table_kind,
     ) {

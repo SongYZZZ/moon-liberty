@@ -301,6 +301,7 @@ pub fn compatibility_report(
   let groups = []
   let findings = []
   collect_declarations(root, attrs, groups, findings)
+  findings.append(standard_findings(root))
   let counts : Map[String, Int] = Map([])
   let modes : Map[String, String] = Map([])
   inspect_format(
@@ -341,6 +342,8 @@ pub fn compatibility_json(report : CompatibilityReport) -> Json {
     "implemented_checks_passed": (errors == 0).to_json(),
     "complete_standard_conformance": report.complete_conformance.to_json(),
     "roundtrip_verified": report.roundtrip_verified.to_json(),
+    "implemented_rule_ids": standard_rule_ids().to_json(),
+    "rule_inventory_exhaustive": false,
     "errors": errors.to_json(),
     "warnings": (report.findings.length() - errors).to_json(),
     "features": report.features

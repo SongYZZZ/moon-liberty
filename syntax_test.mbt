@@ -281,3 +281,11 @@ test "writer retains nested complex call atoms and quoted punctuation" {
   let written = @liberty.write_liberty(root)
   assert_eq(@liberty.write_liberty(@liberty.parse_liberty(written)), written)
 }
+
+///|
+test "missing separator cannot merge two simple attributes" {
+  assert_eq(
+    parse_error("library(x){cell(C){area:1\n dont_use:false;}}"),
+    "MissingSemicolon",
+  )
+}

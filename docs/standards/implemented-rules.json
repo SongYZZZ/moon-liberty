@@ -1,0 +1,132 @@
+{
+  "standard": "Liberty 2017.06",
+  "exhaustive_manual_inventory": false,
+  "rules": [
+    {
+      "id": "group-parent",
+      "reference": "UG1 chapters 4, 5, 7; Reference group syntax",
+      "evidence": "standard_rules_test.mbt",
+      "test": "known standard group parent and argument rules reject misplaced pins",
+      "limitations": "Only explicitly recognized group kinds and listed parents."
+    },
+    {
+      "id": "group-arguments",
+      "reference": "Reference cell, pin, type and template group syntax",
+      "evidence": "standard_rules_test.mbt",
+      "test": "known standard group parent and argument rules reject misplaced pins",
+      "limitations": "Not every standard group arity is implemented."
+    },
+    {
+      "id": "attribute-form",
+      "reference": "UG1 chapter 1 attribute statements",
+      "evidence": "standard_rules_test.mbt",
+      "test": "standard simple attributes cannot use complex form or repeat",
+      "limitations": "Only recognized simple attributes."
+    },
+    {
+      "id": "attribute-type",
+      "reference": "Reference cell/pin/type/library simple attributes",
+      "evidence": "standard_rules_test.mbt",
+      "test": "standard attributes validate boolean enum and quoted string types",
+      "limitations": "Finite enumerated attribute subset; not a complete schema."
+    },
+    {
+      "id": "attribute-duplicate",
+      "reference": "Reference group attributes",
+      "evidence": "standard_rules_test.mbt",
+      "test": "standard simple attributes cannot use complex form or repeat",
+      "limitations": "Standard property names checked; repeatable extension semantics are not inferred."
+    },
+    {
+      "id": "template-axis",
+      "reference": "UG1 7-16 through 7-20",
+      "evidence": "standard_rules_test.mbt",
+      "test": "standard template requires paired contiguous distinct axes",
+      "limitations": "lu_table_template and power_lut_template; variable enum completeness remains open."
+    },
+    {
+      "id": "template-reference",
+      "reference": "UG1 chapter 7 templates and lookup tables",
+      "evidence": "standard_rules_test.mbt",
+      "test": "power and timing template names have separate namespaces",
+      "limitations": "Six NLDM table kinds, rise/fall power, thirty 2017.06 moment LVF table kinds."
+    },
+    {
+      "id": "table-shape",
+      "reference": "UG1 7-17 through 7-20; 2017.06 Release Notes LVF models",
+      "evidence": "standard_rules_test.mbt",
+      "test": "three dimensional standard table validates format without evaluation",
+      "limitations": "Scalar through 3D format validation; physical evaluation limited to 0D/1D/2D NLDM."
+    },
+    {
+      "id": "table-order",
+      "reference": "UG1 7-19 table attributes",
+      "evidence": "standard_rules_test.mbt",
+      "test": "table overrides must precede values",
+      "limitations": "Only supported table groups."
+    },
+    {
+      "id": "transition-nonnegative",
+      "reference": "UG1 chapter 7 transition lookup table values",
+      "evidence": "standard_rules_test.mbt",
+      "test": "transition negativity differs from legal negative propagation delay",
+      "limitations": "rise_transition/fall_transition; negative propagation delay stays legal."
+    },
+    {
+      "id": "bus-type",
+      "reference": "UG1 4-41 through 4-43; Reference type group",
+      "evidence": "standard_rules_test.mbt",
+      "test": "bus requires a declared type as its first statement",
+      "limitations": "Library-level types; custom naming-style semantics not expanded."
+    },
+    {
+      "id": "bus-range",
+      "reference": "Reference type group; UG1 bus groups",
+      "evidence": "standard_rules_test.mbt",
+      "test": "bus type endpoints width and direction are consistent",
+      "limitations": "Cross-checks explicit endpoints/width; optional defaults are not synthesized."
+    },
+    {
+      "id": "bus-members",
+      "reference": "UG1 4-41 through 4-43",
+      "evidence": "standard_rules_test.mbt",
+      "test": "unquoted bus members ranges and shared direction validate",
+      "limitations": "Bracket names and explicitly declared bounds; no vector expansion or custom naming-style validator."
+    },
+    {
+      "id": "state-arguments",
+      "reference": "UG1 chapter 5 ff/latch/bank groups",
+      "evidence": "standard_rules_test.mbt",
+      "test": "state groups require distinct names and positive bank widths",
+      "limitations": "Arguments and positive bank width; full sequential semantics not implemented."
+    },
+    {
+      "id": "state-references",
+      "reference": "UG1 chapter 5 state equations",
+      "evidence": "standard_rules_test.mbt",
+      "test": "state expressions resolve cell inputs and internal nodes",
+      "limitations": "Scalar Boolean references; bank/vector equations and physical simulation remain open."
+    },
+    {
+      "id": "statetable-nodes",
+      "reference": "UG1 5-26 through 5-29",
+      "evidence": "standard_rules_test.mbt",
+      "test": "statetable duplicate undeclared nodes and duplicate tables fail",
+      "limitations": "Node count/uniqueness/input references only; not a state-machine simulator."
+    },
+    {
+      "id": "statetable-rows",
+      "reference": "UG1 5-26 through 5-29",
+      "evidence": "standard_rules_test.mbt",
+      "test": "statetable node names counts and column tokens validate",
+      "limitations": "Three columns and widths; row priority/electrical meaning not evaluated."
+    },
+    {
+      "id": "statetable-tokens",
+      "reference": "UG1 5-26 through 5-29",
+      "evidence": "standard_rules_test.mbt",
+      "test": "statetable node names counts and column tokens validate",
+      "limitations": "Column-specific token sets; N/clock physical constraints not fully checked."
+    }
+  ]
+}

@@ -11,6 +11,9 @@ pub fn standard_rule_ids() -> Array[String] {
 
 ///|
 fn std_parents(kind : String) -> Array[String]? {
+  if std_lvf_table(kind) {
+    return Some(["timing"])
+  }
   match kind {
     "cell"
     | "type"
@@ -39,6 +42,25 @@ fn std_parents(kind : String) -> Array[String]? {
     "rise_power" | "fall_power" => Some(["internal_power"])
     _ => None
   }
+}
+
+///|
+// The three moment families introduced by the 2017.06 release notes.
+// Recognition is deliberately enumerated; arbitrary ocv_* extensions are not validated as these tables.
+fn std_lvf_table(kind : String) -> Bool {
+  for prefix in ["ocv_mean_shift_", "ocv_std_dev_", "ocv_skewness_"] {
+    for
+      suffix in [
+        "cell_rise", "cell_fall", "rise_transition", "fall_transition", "retaining_rise",
+        "retaining_fall", "retain_rise_slew", "retain_fall_slew", "rise_constraint",
+        "fall_constraint",
+      ] {
+      if kind == prefix + suffix {
+        return true
+      }
+    }
+  }
+  false
 }
 
 ///|
@@ -663,6 +685,7 @@ fn std_walk(
     "statetable" => std_statetable(group, scope, path, findings)
     _ =>
       if timing_table_kind(group.kind) ||
+        std_lvf_table(group.kind) ||
         ["rise_power", "fall_power"].contains(group.kind) {
         std_table(group, templates, path, findings)
       }

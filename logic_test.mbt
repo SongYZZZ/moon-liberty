@@ -73,8 +73,8 @@ test "AND binds before OR" {
 }
 
 ///|
-test "AND binds before XOR" {
-  assert_eq(logic_outputs("A ^ B & C"), logic_outputs("A ^ (B & C)"))
+test "XOR binds before AND in Liberty expressions" {
+  assert_eq(logic_outputs("A ^ B & C"), logic_outputs("(A ^ B) & C"))
 }
 
 ///|

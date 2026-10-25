@@ -36,6 +36,12 @@ def main():
     for material in ("PROJECT_APPLICATION.md", "README.md", "docs/STANDARD_CONFORMANCE.md"):
         assert "2017.06" in (ROOT / material).read_text(encoding="utf-8")
     profile = ["--standard", "2017.06", "--json"]
+    rules = json.loads((ROOT / "docs/standards/implemented-rules.json").read_text(encoding="utf-8"))
+    assert rules["exhaustive_manual_inventory"] is False
+    assert len({r["id"] for r in rules["rules"]}) == len(rules["rules"])
+    for rule in rules["rules"]:
+        assert rule["reference"] and rule["limitations"]
+        assert rule["test"] in (ROOT / rule["evidence"]).read_text(encoding="utf-8")
     source = FIXTURES / "include-main.lib"
     sources = FIXTURES / "sources.json"
     # Merely parsing a newer library date never detects an edition.
@@ -43,6 +49,8 @@ def main():
     missing = run("compat", source, *profile, code=2, json_output=False)
     assert "MissingInclude" in missing.stderr
     accepted = run("compat", source, "--sources", sources, *profile)
+    assert accepted["implemented_rule_ids"] == [r["id"] for r in rules["rules"]]
+    assert accepted["rule_inventory_exhaustive"] is False
     assert accepted["implemented_checks_passed"] and accepted["roundtrip_verified"]
     assert accepted["complete_standard_conformance"] is False
 
@@ -85,10 +93,28 @@ def main():
         nested_map.write_text(json.dumps({"pins.inc": "include_file(other.inc);"}), encoding="utf-8")
         assert "NestedInclude" in run("compat", source, "--sources", nested_map, *profile, code=2, json_output=False).stderr
 
+        # Exercise the new rules through the shipped CLI, not just direct API calls.
+        cases = [
+            ("cell(C){area:not_a_number;}", "StandardAttributeType"),
+            ("pin(A){}", "StandardGroupParent"),
+            ("type(T){bit_width:3;bit_from:3;bit_to:0;}", "StandardBusRange"),
+            ("cell(C){bus(D){bus_type:missing;}}", "StandardBusType"),
+            ("cell(C){ff(Q,Q){}}", "StandardStateArguments"),
+            ('cell(C){pin(A){}statetable("A","Q"){table:"X:L:H";}}', "StandardStateTableToken"),
+            ('cell(C){pin(Y){timing(){rise_transition(scalar){values("-1");}}}}', "NegativeTransition"),
+            ('cell(C){pin(Y){timing(){ocv_std_dev_cell_rise(MISSING){values("1");}}}}', "StandardTemplateReference"),
+        ]
+        for index, (body, expected) in enumerate(cases):
+            case = tmp / f"rule-{index}.lib"
+            case.write_text("library(x){" + body + "}", encoding="utf-8")
+            report = run("compat", case, *profile, code=1)
+            assert expected in {f["code"] for f in report["findings"]}
+
     report = dict(target_standard="Liberty 2017.06", cli_checks=checks,
                   complete_standard_conformance=False, include_and_scalar_query=True,
                   declared_type_rejection=True, advanced_data_preserved=True,
                   unsupported_waveform_evaluation_rejected=True)
+    report["implemented_rule_families"] = len(rules["rules"])
     (artifacts / "standard-cases.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
 

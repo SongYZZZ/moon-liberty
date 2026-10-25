@@ -265,6 +265,26 @@ test "out of rule budget is explicit instead of silent integer truncation" {
 }
 
 ///|
+test "2017.06 LVF moment tables validate structure while remaining unevaluated" {
+  assert_eq(
+    std_codes(
+      std_timing("ocv_mean_shift_cell_rise(scalar){values(\"-0.01\");}"),
+    ),
+    [],
+  )
+  assert_true(
+    std_codes(std_timing("ocv_std_dev_cell_rise(MISSING){values(\"1\");}")).contains(
+      "StandardTemplateReference",
+    ),
+  )
+  assert_true(
+    std_codes(std_timing("ocv_skewness_cell_rise(scalar){values(\"1,2\");}")).contains(
+      "TableShape",
+    ),
+  )
+}
+
+///|
 test "non table lookup delay model cannot be silently queried" {
   let library = @liberty.load_library("library(x){delay_model:polynomial;}")
   try

@@ -91,6 +91,32 @@ fn LogicParser::unary(
       self.index += 1
       value
     }
+    Some(34) => {
+      self.index += 1
+      let start = self.index
+      while self.index < self.text.length() && self.text[self.index] != 34 {
+        if self.text[self.index] == 0 ||
+          self.text[self.index] == 10 ||
+          self.text[self.index] == 13 {
+          raise failure(
+            "BooleanIdentifier",
+            "invalid quoted signal name",
+            self.position(),
+          )
+        }
+        self.index += 1
+      }
+      if self.index == self.text.length() || self.index == start {
+        raise failure(
+          "BooleanIdentifier",
+          "quoted signal name must be nonempty and closed",
+          self.position(),
+        )
+      }
+      let name = self.text[start:self.index].to_owned()
+      self.index += 1
+      Signal(name)
+    }
     Some(code) if logic_identifier(code) => {
       let start = self.index
       while self.index < self.text.length() &&
@@ -133,13 +159,17 @@ fn LogicParser::conjunction(
   self : LogicParser,
   depth : Int,
 ) -> Logic raise LibertyError {
-  let mut value = self.unary(depth)
+  let mut value = self.exclusive(depth)
   while true {
     let next = self.peek()
     let explicit = next == Some(38) || next == Some(42)
     let implicit = match next {
       Some(code) =>
-        logic_identifier(code) || code == 40 || code == 33 || code == 126
+        logic_identifier(code) ||
+        code == 40 ||
+        code == 33 ||
+        code == 126 ||
+        code == 34
       None => false
     }
     if !explicit && !implicit {
@@ -149,7 +179,7 @@ fn LogicParser::conjunction(
       self.index += 1
     }
     self.bump()
-    value = And(value, self.unary(depth))
+    value = And(value, self.exclusive(depth))
   }
   value
 }
@@ -159,11 +189,11 @@ fn LogicParser::exclusive(
   self : LogicParser,
   depth : Int,
 ) -> Logic raise LibertyError {
-  let mut value = self.conjunction(depth)
+  let mut value = self.unary(depth)
   while self.peek() == Some(94) {
     self.index += 1
     self.bump()
-    value = Xor(value, self.conjunction(depth))
+    value = Xor(value, self.unary(depth))
   }
   value
 }
@@ -173,11 +203,11 @@ fn LogicParser::disjunction(
   self : LogicParser,
   depth : Int,
 ) -> Logic raise LibertyError {
-  let mut value = self.exclusive(depth)
+  let mut value = self.conjunction(depth)
   while self.peek() == Some(124) || self.peek() == Some(43) {
     self.index += 1
     self.bump()
-    value = Or(value, self.exclusive(depth))
+    value = Or(value, self.conjunction(depth))
   }
   value
 }

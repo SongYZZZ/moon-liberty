@@ -301,7 +301,7 @@ pub fn compatibility_report(
   let groups = []
   let findings = []
   collect_declarations(root, attrs, groups, findings)
-  findings.append(standard_findings(root))
+  findings.append(collect_standard_findings(root))
   let counts : Map[String, Int] = Map([])
   let modes : Map[String, String] = Map([])
   inspect_format(

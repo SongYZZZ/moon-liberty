@@ -560,6 +560,17 @@ fn std_state(
         "enable", "enable_also",
       ] {
       if group.text(key) is Some(expression) {
+        if bank || expression.contains(":") {
+          add_finding(
+            findings,
+            "UnsupportedVectorExpression",
+            path + "/" + key,
+            "vector/bank equation is preserved; scalar reference checks do not validate it",
+            simple_position(group, key),
+            severity=Warning,
+          )
+          continue
+        }
         check_logic(
           expression,
           names,
@@ -708,6 +719,14 @@ fn std_walk(
 ///|
 /// Apply documented, implemented 2017.06 rules. This is not complete conformance.
 pub fn standard_findings(root : Group) -> Array[Finding] {
+  ignore(write_liberty(root)) catch {
+    error => return [finding(error, "/library")]
+  }
+  collect_standard_findings(root)
+}
+
+///|
+fn collect_standard_findings(root : Group) -> Array[Finding] {
   let findings = []
   let templates : Map[String, Group] = Map([])
   let types : Map[String, Group] = Map([])

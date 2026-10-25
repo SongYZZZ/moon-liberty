@@ -298,6 +298,29 @@ test "non table lookup delay model cannot be silently queried" {
 }
 
 ///|
+test "public standard checks bound caller constructed syntax before recursion" {
+  let root = @liberty.parse_liberty("library(x){}")
+  let forged = { ..root, kind: "cell", }
+  assert_true(
+    @liberty.standard_findings(forged).any(f => f.severity == @liberty.Error),
+  )
+}
+
+///|
+test "vector bank equations are preserved and explicitly unvalidated" {
+  let root = @liberty.parse_liberty(
+    "library(x){cell(C){ff_bank(Q,QN,4){next_state:\"D[3:0]\";}}}",
+  )
+  let findings = @liberty.standard_findings(root)
+  assert_eq(findings.filter(f => f.severity == @liberty.Error), [])
+  assert_true(
+    findings.any(f => {
+      f.code == "UnsupportedVectorExpression" && f.severity == @liberty.Warning
+    }),
+  )
+}
+
+///|
 test "negative transition is also rejected by domain lint and query" {
   let library = @liberty.load_library(
     "library(x){time_unit:\"1ns\";capacitive_load_unit(1,pf);" +

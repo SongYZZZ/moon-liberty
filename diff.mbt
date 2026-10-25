@@ -28,18 +28,7 @@ fn path_escape(text : String) -> String {
 
 ///|
 fn canonical_number_or_word(text : String) -> String {
-  if text.is_empty() {
-    return ""
-  }
-  let first = text[0].to_int()
-  if (first >= 48 && first <= 57) || first == 43 || first == 45 || first == 46 {
-    try finite_number(text) catch {
-      _ => return text
-    } noraise {
-      value => return value.to_string()
-    }
-  }
-  text
+  decimal_identity(text).unwrap_or(text)
 }
 
 ///|
@@ -69,9 +58,8 @@ fn canonical_value(name : String, atoms : Array[Atom]) -> String {
     }
   }
   if name == "related_pin" {
-    let pins = words(text)
-    pins.sort_by(lexical_compare)
-    return pins.join(" ")
+    // Order can map corresponding members of buses/bundles. Never sort it away.
+    return words(text).join(" ")
   }
   atoms.map(canonical_atom).join(" ")
 }
@@ -79,10 +67,21 @@ fn canonical_value(name : String, atoms : Array[Atom]) -> String {
 ///|
 fn canonical_argument(name : String, atoms : Array[Atom]) -> String {
   if ["index_1", "index_2", "index_3", "values"].contains(name) {
-    try number_list(atoms) catch {
-      _ => ()
-    } noraise {
-      values => return values.map(value => value.to_string()).join(",")
+    if atoms is [atom] {
+      let values = []
+      let mut numeric = true
+      for part in atom_text(atom).split(",") {
+        match decimal_identity(part.trim().to_owned()) {
+          Some(value) => values.push(value)
+          None => {
+            numeric = false
+            break
+          }
+        }
+      }
+      if numeric {
+        return values.join(",")
+      }
     }
   }
   atoms.map(canonical_atom).join(" ")

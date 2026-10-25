@@ -170,6 +170,16 @@ test "group closing semicolon is tolerated" {
 }
 
 ///|
+test "unquoted bus ranges preserve names and write back without inserting spaces" {
+  let root = @liberty.parse_liberty(
+    "library(x){cell(C){bus(DATA){pin(DATA[7:0]){capacitance:1;}}}}",
+  )
+  let name = root.groups("cell")[0].groups("bus")[0].groups("pin")[0].name()
+  assert_eq(name, "DATA[7:0]")
+  assert_true(@liberty.write_liberty(root).contains("pin (DATA[7:0])"))
+}
+
+///|
 test "quoted structural words are ordinary data" {
   let root = @liberty.parse_liberty(
     "library(x){ comment:\"library\"; f(\"}\",\";\"); }",

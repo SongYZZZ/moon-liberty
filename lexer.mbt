@@ -125,6 +125,13 @@ fn Scanner::quoted(self : Scanner) -> Token raise LibertyError {
         break
       }
       let escaped = self.text[self.index]
+      if escaped == 0 {
+        raise failure(
+          "InvalidCharacter",
+          "NUL is not permitted",
+          self.position(),
+        )
+      }
       if escaped == 10 {
         self.advance()
         continue
@@ -149,6 +156,7 @@ fn Scanner::quoted(self : Scanner) -> Token raise LibertyError {
         out.write_string("\\")
         out.write_stringview(self.text[self.index:self.index + 1])
         self.advance()
+        count += 1
       }
     } else {
       out.write_stringview(self.text[self.index:self.index + 1])
@@ -215,10 +223,11 @@ pub fn tokenize(
         position: pos,
       })
     } else {
+      let mut brackets = 0
       while scanner.index < text.length() {
         let current = text[scanner.index]
         if whitespace(current) ||
-          symbol(current) ||
+          (symbol(current) && !(current == 58 && brackets > 0)) ||
           current == 34 ||
           scanner.has(47, 47) ||
           scanner.has(47, 42) {
@@ -230,6 +239,12 @@ pub fn tokenize(
             "NUL is not permitted",
             scanner.position(),
           )
+        }
+        if current == 91 {
+          brackets += 1
+        }
+        if current == 93 && brackets > 0 {
+          brackets -= 1
         }
         scanner.advance()
         if scanner.index - pos.offset > limits.max_token_chars {

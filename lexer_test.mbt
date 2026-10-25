@@ -72,6 +72,30 @@ test "unknown vendor escapes are preserved" {
 }
 
 ///|
+test "escaped NUL cannot bypass the quoted character check" {
+  assert_eq(lex_error("\"a\\\u0000b\""), "InvalidCharacter")
+}
+
+///|
+test "preserved unknown escape counts both characters toward token budget" {
+  assert_eq(
+    lex_error("\"\\t\\t\"", limits={
+      ..@liberty.Limits::default(),
+      max_token_chars: 3,
+    }),
+    "TokenLimit",
+  )
+}
+
+///|
+test "bus range colon remains part of the unquoted pin name" {
+  assert_eq(
+    @liberty.tokenize("pin(DATA[7:0]){capacitance:1;}").map(t => t.text),
+    ["pin", "(", "DATA[7:0]", ")", "{", "capacitance", ":", "1", ";", "}", ""],
+  )
+}
+
+///|
 test "backslash continuation is removed outside strings" {
   assert_eq(@liberty.tokenize("a \\\n b").map(t => t.text), ["a", "b", ""])
 }

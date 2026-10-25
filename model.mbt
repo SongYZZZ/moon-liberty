@@ -91,17 +91,17 @@ fn optional_number(
 
 ///|
 fn words(value : String) -> Array[String] {
-  value
-  .split(" ")
-  .filter_map(view => {
-    let word = view.trim().to_owned()
-    if word.is_empty() {
-      None
-    } else {
-      Some(word)
+  let result = []
+  let mut start = 0
+  for i = 0; i <= value.length(); i = i + 1 {
+    if i == value.length() || whitespace(value[i]) {
+      if i > start {
+        result.push(value[start:i].to_owned())
+      }
+      start = i + 1
     }
-  })
-  .to_array()
+  }
+  result
 }
 
 ///|

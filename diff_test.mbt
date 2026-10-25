@@ -29,6 +29,65 @@ test "numeric exponent spelling is normalized" {
 }
 
 ///|
+test "audit detects neighboring integers beyond binary double precision" {
+  assert_eq(
+    compare_texts(
+      "library(x){revision:9007199254740992;}", "library(x){revision:9007199254740993;}",
+    ).total_changes,
+    1,
+  )
+}
+
+///|
+test "audit detects decimal differences smaller than binary rounding" {
+  assert_eq(
+    compare_texts(
+      "library(x){revision:0.10000000000000000;}", "library(x){revision:0.10000000000000001;}",
+    ).total_changes,
+    1,
+  )
+}
+
+///|
+test "audit normalizes exact signed decimal zeros and trailing zeros" {
+  assert_eq(
+    compare_texts(
+      "library(x){a:+001.23000e+02;b:-0.000;}", "library(x){a:123;b:0e100;}",
+    ).total_changes,
+    0,
+  )
+}
+
+///|
+test "audit retains precise quoted numeric table rows" {
+  let a = "library(x){vendor(V){values(\"9007199254740992\");}}"
+  assert_eq(
+    compare_texts(a, a.replace(old="9007199254740992", new="9007199254740993")).total_changes,
+    1,
+  )
+}
+
+///|
+test "audit does not hide positional related pin changes" {
+  assert_true(
+    compare_texts(
+      "library(x){vendor(V){related_pin:\"A B\";}}", "library(x){vendor(V){related_pin:\"B A\";}}",
+    ).total_changes >
+    0,
+  )
+}
+
+///|
+test "audit exponent normalization is bounded and never collapses huge exponents" {
+  assert_eq(
+    compare_texts(
+      "library(x){a:1e999999999999;}", "library(x){a:1e999999999998;}",
+    ).total_changes,
+    1,
+  )
+}
+
+///|
 test "equivalent Boolean operator spellings are normalized" {
   let a = "library(x){cell(A){pin(A){direction:input;}pin(B){direction:input;}pin(Y){direction:output;function:\"A * B\";}}}"
   let b = a.replace(old="A * B", new="A & B")

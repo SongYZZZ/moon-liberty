@@ -289,3 +289,47 @@ test "missing separator cannot merge two simple attributes" {
     "MissingSemicolon",
   )
 }
+
+///|
+test "writer budget includes escaping delimiters and indentation exactly" {
+  let root = @liberty.parse_liberty(
+    "library(x){cell(C){a:\"\\\"\\\\\";f(1,2);}}",
+  )
+  let output = @liberty.write_liberty(root)
+  let limits = {
+    ..@liberty.Limits::default(),
+    max_input_chars: output.length(),
+  }
+  assert_eq(@liberty.write_liberty(root, limits~), output)
+  try
+    @liberty.write_liberty(root, limits={
+      ..limits,
+      max_input_chars: output.length() - 1,
+    })
+  catch {
+    @liberty.LibertyError(code, _, _) => assert_eq(code, "InputLimit")
+  } noraise {
+    _ => fail("rendered budget ignored")
+  }
+}
+
+///|
+test "caller constructed large values are bounded before rendering" {
+  let root = @liberty.parse_liberty("library(x){}")
+  let large = {
+    ..root,
+    items: [
+      @liberty.Attribute("a", [@liberty.Text("a".repeat(1000))], root.position),
+    ],
+  }
+  try
+    @liberty.write_liberty(large, limits={
+      ..@liberty.Limits::default(),
+      max_input_chars: 50,
+    })
+  catch {
+    @liberty.LibertyError(code, _, _) => assert_eq(code, "InputLimit")
+  } noraise {
+    _ => fail("caller AST escaped output budget")
+  }
+}

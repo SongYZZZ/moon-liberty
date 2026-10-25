@@ -33,6 +33,102 @@ priv struct SyntaxWriter {
 }
 
 ///|
+priv struct WriterBudget {
+  limits : Limits
+  mut chars : Int
+  mut nodes : Int
+}
+
+///|
+fn WriterBudget::add(
+  self : WriterBudget,
+  count : Int,
+  pos : Position,
+) -> Unit raise LibertyError {
+  if count > self.limits.max_input_chars - self.chars {
+    raise failure("InputLimit", "rendered syntax exceeds character budget", pos)
+  }
+  self.chars += count
+}
+
+///|
+fn WriterBudget::atoms(
+  self : WriterBudget,
+  atoms : Array[Atom],
+  pos : Position,
+) -> Unit raise LibertyError {
+  for i = 0; i < atoms.length(); i = i + 1 {
+    if i > 0 {
+      self.add(1, pos)
+    }
+    let text = atom_text(atoms[i])
+    self.add(text.length(), pos)
+    if atoms[i] is Text(_) {
+      self.add(2, pos)
+      for j = 0; j < text.length(); j = j + 1 {
+        if text[j] == 34 || text[j] == 92 {
+          self.add(1, pos)
+        }
+      }
+    }
+  }
+}
+
+///|
+fn WriterBudget::arguments(
+  self : WriterBudget,
+  args : Array[Array[Atom]],
+  pos : Position,
+) -> Unit raise LibertyError {
+  for i = 0; i < args.length(); i = i + 1 {
+    if i > 0 {
+      self.add(2, pos)
+    }
+    self.atoms(args[i], pos)
+  }
+}
+
+///|
+fn WriterBudget::group(
+  self : WriterBudget,
+  group : Group,
+  depth : Int,
+) -> Unit raise LibertyError {
+  if depth >= self.limits.max_depth {
+    raise failure("DepthLimit", "writer nesting exceeds limit", group.position)
+  }
+  self.nodes += 1
+  if self.nodes > self.limits.max_nodes {
+    raise failure("NodeLimit", "writer node budget exceeded", group.position)
+  }
+  self.add(depth * 2, group.position)
+  self.add(group.kind.length(), group.position)
+  self.add(6, group.position)
+  self.arguments(group.arguments, group.position)
+  for item in group.items {
+    match item {
+      Section(child) => self.group(child, depth + 1)
+      Attribute(name, _, pos) | Complex(name, _, pos) => {
+        self.nodes += 1
+        if self.nodes > self.limits.max_nodes {
+          raise failure("NodeLimit", "writer node budget exceeded", pos)
+        }
+        self.add((depth + 1) * 2, pos)
+        self.add(name.length(), pos)
+        self.add(5, pos)
+        match item {
+          Attribute(_, values, _) => self.atoms(values, pos)
+          Complex(_, args, _) => self.arguments(args, pos)
+          _ => ()
+        }
+      }
+    }
+  }
+  self.add(depth * 2, group.position)
+  self.add(2, group.position)
+}
+
+///|
 fn SyntaxWriter::indent(self : SyntaxWriter, depth : Int) -> Unit {
   for i = 0; i < depth; i = i + 1 {
     self.output.write_string("  ")
@@ -88,6 +184,11 @@ pub fn write_liberty(
   group : Group,
   limits? : Limits = Limits::default(),
 ) -> String raise LibertyError {
+  // Validate budgets before allocating the rendered text, including escaping
+  // and indentation. Caller-constructed ASTs need not originate in the lexer.
+  ignore(tokenize("", limits~))
+  let budget : WriterBudget = { limits, chars: 0, nodes: 0, }
+  budget.group(group, 0)
   let writer : SyntaxWriter = { output: StringBuilder(), limits, nodes: 0, }
   writer.group(group, 0)
   let output = writer.output.to_string()

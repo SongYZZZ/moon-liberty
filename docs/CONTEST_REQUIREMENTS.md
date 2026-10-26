@@ -1,6 +1,6 @@
 # 十月报名材料核对
 
-核对日期：2026-10-25。以[官方十月活动](https://moonbitlang.github.io/Hackathon2026/)为主，不把其他月份的规则直接套用。公开源码位置为 [src/App.tsx](https://github.com/moonbitlang/Hackathon2026/blob/main/src/App.tsx)，此次读取仓库 HEAD a879c208b261ca500f65707d42504d06572fa9b0，App.tsx blob e27e1d752b573ad88dccf6da681a1492c7dcfe0c。原页面链接的飞书完整章程未成功读取，因此不声称逐条验证不可访问内容。
+核对日期：2026-10-26。以[官方十月活动](https://moonbitlang.github.io/Hackathon2026/)为主，不把其他月份的规则直接套用。公开源码位置为 [src/App.tsx](https://github.com/moonbitlang/Hackathon2026/blob/main/src/App.tsx)，此次读取仓库 HEAD a879c208b261ca500f65707d42504d06572fa9b0，App.tsx blob e27e1d752b573ad88dccf6da681a1492c7dcfe0c。原页面链接的飞书完整章程未成功读取，因此不声称逐条验证不可访问内容。
 
 ## 已核对的公开要求
 
@@ -9,7 +9,7 @@
 | MoonBit 为主要实现语言，公共仓库 | 核心及 CLI 为 MoonBit，SongYZZZ/moon-liberty |
 | 原创/移植/维护均可，须有实质新贡献 | 原创领域实现；来源及差异详见 REFERENCES、ECOSYSTEM_REVIEW |
 | 连续、有意义的开发记录 | 功能、缺陷修复、测试及文档的实际 Git 提交；身份脚本要求 >=11 |
-| 清晰 README、可运行例子、必要测试 | 两个例子、真实样本、305 原生测试、CLI/独立验证和 CI |
+| 清晰 README、可运行例子、必要测试 | 两个例子、真实样本、329 原生测试、CLI/独立验证和 CI |
 | OSI 开源许可证，尊重上游 | Apache-2.0；数据与独立测试工具分别披露 |
 | 原创性、真实性和可解释性 | 不声称完整 STA、全面标准符合性或全球首创，界定已验证范围 |
 | 最多 3 人，十月最多提交 3 个项目 | 本材料仅宋永振一人；表单剩余名额需按实际报名记录确认 |

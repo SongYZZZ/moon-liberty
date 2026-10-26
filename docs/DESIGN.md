@@ -30,3 +30,7 @@ read_text 先检查普通文件及字节上限，再读取固定长度并严格�
 
 ## 0.2.0 标准层
 StandardEdition 固定到 Liberty2017_06。parse_fragment 和 parse_liberty_sources 在纯核心内按完整语句解析 include，不进行文本拼接；所有输入共用预算，拒绝嵌套 include。compatibility_report 校验库级扩展声明并报告格式/求值覆盖，完整符合性保持 false。CLI source map 是文件名到源码文本的 JSON，显式 IO 与领域解析分离。详细契约见 STANDARD_CONFORMANCE。
+
+## 0.4.0 领域建模边界
+
+同一 pin 分组可声明多个标量名称，模型为每个名称生成可查找记录，保留原始共享 Group；时序表数组共享并在使用时校验。ModelLimits 同时限制展开引脚数和重复验证工作量。AST 的 write/normalize/extract 仍保存原有声明，不把模型展开反写成新的来源。总线与 bundle 未展开时，模型明确警告。标准层的库级/单元级类型环境分别保存，局部遮蔽不会改变全局或兄弟单元。

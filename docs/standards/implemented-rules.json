@@ -74,10 +74,10 @@
     },
     {
       "id": "bus-type",
-      "reference": "UG1 4-41 through 4-43; Reference type group",
+      "reference": "UG1 4-41 through 4-43; Reference type group 2-123 through 2-124",
       "evidence": "standard_rules_test.mbt",
       "test": "bus requires a declared type as its first statement",
-      "limitations": "Library-level types; custom naming-style semantics not expanded."
+      "limitations": "Library and cell-local types with lexical shadowing; vector expansion and custom naming remain open."
     },
     {
       "id": "bus-range",
@@ -95,10 +95,10 @@
     },
     {
       "id": "state-arguments",
-      "reference": "UG1 chapter 5 ff/latch/bank groups",
+      "reference": "Reference ff/ff_bank groups 2-62 through 2-68",
       "evidence": "standard_rules_test.mbt",
       "test": "state groups require distinct names and positive bank widths",
-      "limitations": "Arguments and positive bank width; full sequential semantics not implemented."
+      "limitations": "Arguments, positive bank width, required next_state and a clock equation; full sequential semantics remain open."
     },
     {
       "id": "state-references",

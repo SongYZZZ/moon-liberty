@@ -4,14 +4,14 @@
 
 [GitHub 仓库](https://github.com/SongYZZZ/moon-liberty) · [正式项目申报书](PROJECT_APPLICATION.md) · [范围与限制](docs/SUPPORT.md) · [验证记录](docs/TESTING.md) · [生态检索](docs/ECOSYSTEM_REVIEW.md)
 
-**标准基线固定为 Synopsys Liberty 2017.06。**最终目标是该版本完整格式读写与格式层规则闭环；当前 0.3.0 仍为部分实现，完整符合性明确标为 false。[标准兼容契约](docs/STANDARD_CONFORMANCE.md)说明终点、缺口及与受限求值的关系，[复审说明](docs/RESUBMISSION_RESPONSE.md)说明本轮改动。
+**标准基线固定为 Synopsys Liberty 2017.06。**最终目标是该版本完整格式读写与格式层规则闭环；当前 0.4.0 仍为部分实现，完整符合性明确标为 false。[标准兼容契约](docs/STANDARD_CONFORMANCE.md)说明终点、缺口及与受限求值的关系，[复审说明](docs/RESUBMISSION_RESPONSE.md)说明本轮改动。
 
 原创 MoonBit 基础库与原生命令行，面向 PDK 维护者、EDA 工具作者和数字电路教学。将文本库转成可检查的结构，按明确的物理单位查询延迟，并在库升级时指出具体字段、逻辑函数或时序表变化。实现使用 Apache-2.0；作者为宋永振（SongYZZZ）。
 
 ## 可以实际完成的工作
 
 - 带行列位置和资源上限的 Liberty 词法、分组及属性解析，保留未知厂商属性和分组，确定性写出。
-- 单元、引脚、时序弧和模板建模；检查重复名称、无效数值、引脚引用、函数引用及表格形状。
+- 单元、引脚、时序弧和模板建模；支持 pin(A,B) 多名称标量引脚，检查重复名称、无效数值、引脚引用、函数引用及表格形状。
 - 标量、一维和二维 NLDM 表校验及插值；组合弧查询把秒、法拉映射到声明的库单位，结果输出秒。
 - 布尔函数解析、求值和有输入数上限的真值表。
 - 按结构路径比较库：忽略注释、属性顺序及部分等价数值写法，保留未知字段的差异；选择单元时保留所有库级上下文。
@@ -48,7 +48,7 @@ moon run cmd/moon-liberty -- truth "!(A & B)" --json
 
 ## 用作 MoonBit 库
 
-项目名为 SongYZZZ/moon-liberty；0.3.0 已发布至 Mooncakes，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
+项目名为 SongYZZZ/moon-liberty；0.4.0 已发布至 Mooncakes，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
 
 ```moonbit
 import {
@@ -61,7 +61,7 @@ import {
     moon run cmd/moon-liberty -- compat tests/fixtures/liberty2017/preserve-models.lib --standard 2017.06 --json
     moon run cmd/moon-liberty -- expand tests/fixtures/liberty2017/include-main.lib --sources tests/fixtures/liberty2017/sources.json --standard 2017.06 -o expanded.lib
 
-[三个标准案例](docs/STANDARD_CASES.md)附有 21 次 CLI 执行断言。格式完整兼容的目标包含 CCS/LVF、总线、状态和功耗结构；当前对这些数据保留、审计并明确不求值。
+[三个标准案例](docs/STANDARD_CASES.md)附有 25 次 CLI 执行断言。格式完整兼容的目标包含 CCS/LVF、总线、状态和功耗结构；当前对这些数据保留、审计并明确不求值。
 
 主要 API：
 
@@ -72,6 +72,7 @@ import {
 | tokenize / parse_liberty / write_liberty | 词法、通用 AST、保留扩展的写出 |
 | load_library / lint_library | 建模与结构、引用及表格检查 |
 | read_units / parse_unit | 声明单位解析，不猜测缺失单位 |
+| validate_units / ModelLimits | 公开单位对象复验、多名称引脚展开与工作预算 |
 | standard_findings / standard_rule_ids | 已实现标准结构检查及规则目录 |
 | read_table_data / validate_table_data | 标量至三维格式读取和形状校验，不执行三维插值 |
 | validate_table / lookup_table | 校验和标量、一维、二维插值 |
@@ -83,11 +84,12 @@ import {
 
 ## 验证与独立核对
 
-原生 **305 项测试**通过；纯核心 **281 项测试**分别在 JS、Wasm GC 通过。另有 18 次原 CLI、21 次标准 CLI 检查；新增语料流程有 89 次 CLI 调用，其中 72 次为 Nangate 四个单元上的独立数值核对。使用独立 Python Liberty 解析器对真实库核对结构清单、完整往返、单元提取，并核对 **IHP 12 个单元上的 312 次时序数值查询**，另加 Nangate 72 次，共 384 次。独立工具仅作为可选测试过程，未复制进 MoonBit 实现或运行时依赖。
+原生 **329 项测试**通过；纯核心 **305 项测试**分别在 JS、Wasm GC 通过。另有 18 次原 CLI、25 次标准 CLI 检查，新增不变量流程 61 次 CLI 调用（含 52 次高精度 Decimal 对照）；新增语料流程有 89 次 CLI 调用，其中 72 次为 Nangate 四个单元上的独立数值核对。使用独立 Python Liberty 解析器对真实库核对结构清单、完整往返、单元提取，并核对 **IHP 12 个单元上的 312 次时序数值查询**，另加 Nangate 72 次，共 384 次。独立工具仅作为可选测试过程，未复制进 MoonBit 实现或运行时依赖。
 
 ```powershell
 moon test --target js -p SongYZZZ/moon-liberty --deny-warn
 moon test --target wasm-gc -p SongYZZZ/moon-liberty --deny-warn
+python scripts/audit-invariants.py --executable _build/native/release/build/cmd/moon-liberty/moon-liberty.exe
 python scripts/verify.py --executable _build/native/release/build/cmd/moon-liberty/moon-liberty.exe --identity
 pwsh scripts/fetch-oracle.ps1
 python scripts/oracle_check.py --executable _build/native/release/build/cmd/moon-liberty/moon-liberty.exe
@@ -106,3 +108,5 @@ moon bench --target native -p SongYZZZ/moon-liberty/benchmarks
 测试数据来自 Apache-2.0 的 IHP Open PDK，原始头部、固定版本和 SHA-256 均保留。它不是本项目移植来源，也不能证明工艺资格或完整标准符合性。详见 [NOTICE](NOTICE) 和 [LICENSE](LICENSE)。
 
 [发布消费者验证](docs/CONSUMER.md) · [完整自查报告](docs/FINAL_REVIEW.md)
+
+0.4.0 新增：单元局部 type 的作用域与遮蔽、ff 必需方程、公开数值对象复验、SI 前缀大小写、极值插值与逻辑引号身份修复。新增 Decimal 合成数据对照与 384 次真实库查询分别统计，不相加冒充真实样本数量。全部未完成标准项仍列在标准契约中。

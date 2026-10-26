@@ -1,6 +1,6 @@
 # 针对 Liberty 标准范围意见的补充说明
 
-2026-10-25，项目与唯一正式申报书均为 MoonLiberty，仓库 https://github.com/SongYZZZ/moon-liberty ，本轮版本 0.3.0。正式上传附件为根 PROJECT_APPLICATION.md。
+2026-10-26，项目与唯一正式申报书均为 MoonLiberty，仓库 https://github.com/SongYZZZ/moon-liberty ，本轮版本 0.4.0。正式上传附件为根 PROJECT_APPLICATION.md。
 
 ## 固定版本和最终目标
 
@@ -10,7 +10,7 @@
 
 - 增加 18 个有章节、测试与限制说明的规则族：标准组/属性、模板命名空间/引用、0D—3D 表形状、总线范围/成员、状态组与状态表。列明 30 种 2017.06 LVF 矩表的结构校验。
 - 修复布尔优先级、超大整数/小数差异漏报、未引号总线范围、缺分号吞并属性、模板错配、负转换时间及写出资源预算等实际缺陷。
-- 305 项原生测试、JS/Wasm GC 各 281 项；标准 CLI 21 次。IHP/Nangate 共 384 次独立数值核对，另有 Yosys 结构往返和未修改的 ASAP7 拒绝负例。全部来源和许可证单独列明。
+- 329 项原生测试、JS/Wasm GC 各 305 项；标准 CLI 25 次。IHP/Nangate 共 384 次独立数值核对，另有 Yosys 结构往返和未修改的 ASAP7 拒绝负例。全部来源和许可证单独列明。
 - 申报书、README、模块、Git origin 使用相同项目名与仓库；开发记录保留实质提交，没有空提交凑数。
 
 ## 当前真实完成程度

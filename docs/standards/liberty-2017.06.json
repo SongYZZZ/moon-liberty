@@ -68,7 +68,7 @@
       "scope": "总线、bundle 与 type",
       "status": "partial",
       "open_items": [
-        "全部总线/bundle 属性规则、默认范围推导、自定义命名、向量展开和多名引脚领域建模"
+        "全部总线/bundle 属性规则、默认范围推导、自定义命名和向量展开；直接多名称标量引脚已实现"
       ],
       "evidence": [
         "tests/fixtures/liberty2017/preserve-models.lib",
@@ -81,7 +81,7 @@
       "scope": "ff/latch/statetable",
       "status": "partial",
       "open_items": [
-        "必需属性、完整状态语义/引用、向量 bank 表达式及全部反例"
+        "完整状态语义/引用、latch 的全部必需属性、向量 bank 表达式及全部反例；ff 必需状态/时钟方程已检查"
       ],
       "evidence": [
         "tests/fixtures/liberty2017/preserve-models.lib",
@@ -94,7 +94,7 @@
       "scope": "NLDM 时序表",
       "status": "partial",
       "open_items": [
-        "三维数据的完整格式层校验；全部轴枚举与模板规则"
+        "全部轴枚举与模板规则、其他格式约束；3D 形状验证已实现，求值仍不支持"
       ],
       "evidence": [
         "table_test.mbt",
@@ -189,7 +189,9 @@
       ],
       "evidence": [
         "scripts/oracle_check.py",
-        "scripts/check-standard.py"
+        "scripts/check-standard.py",
+        "scripts/corpus_check.py",
+        "scripts/audit-invariants.py"
       ]
     }
   ]

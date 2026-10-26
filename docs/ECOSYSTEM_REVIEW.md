@@ -30,3 +30,7 @@ GitHub 查询 liberty language:MoonBit 当前仅返回本仓库，Mooncakes 的 
 ## 2026-10-25 补查
 
 运行 moon search liberty/nldm/synopsys（limit 20/10/10），三次均只返回本模块。gh search repos 'liberty language:MoonBit' 仅返回 SongYZZZ/moon-liberty。网站补充查询没有发现同定位的其他实现。此次不把模糊关键词检索说成全部项目或全部未公开参赛名单的穷尽核验。
+
+## 2026-10-26 补查
+
+GitHub 的 liberty language:MoonBit 仍只返回本仓库。十月官网 App.tsx blob 仍为 e27e1d752b573ad88dccf6da681a1492c7dcfe0c。公开检索无法证明未公开报名无重叠，本轮未新增“唯一/首创/全面兼容”的宣传。

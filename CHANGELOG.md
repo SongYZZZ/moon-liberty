@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.0 — 2026-10-26
+
+Expand directly declared scalar pin aliases such as pin(A,B), with explicit
+per-library pin and validation-work budgets. Warn when bus/bundle containers
+remain outside the typed inventory. Resolve cell-local bus types with lexical
+shadowing, require flip-flop next-state/clock equations, and avoid copying the
+global type map per cell.
+
+Preserve quoted numeric/special Boolean signal identities through formatting and
+semantic diff. Stabilize finite extreme-value interpolation, keep SI prefix case
+significant, validate caller-supplied units/numeric fields, and never drop an
+inherited third table axis or hide malformed 3-D data behind an unsupported warning.
+Add a fixed-seed Decimal oracle and CLI invariants to CI. Full 2017.06 conformance
+remains incomplete; the new checks do not claim exhaustive standard coverage.
+
 ## 0.3.0 — 2026-10-25
 
 Add 18 traceable standard-rule families for selected group/attribute, template,

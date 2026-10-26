@@ -95,10 +95,10 @@
     },
     {
       "id": "state-arguments",
-      "reference": "Reference ff/ff_bank groups 2-62 through 2-68",
+      "reference": "Reference ff/ff_bank 2-62 through 2-68; latch/latch_bank 2-85 through 2-91",
       "evidence": "standard_rules_test.mbt",
       "test": "state groups require distinct names and positive bank widths",
-      "limitations": "Arguments, positive bank width, required next_state and a clock equation; full sequential semantics remain open."
+      "limitations": "Checks arguments, bank width, ff equations and selected latch paired attributes/state enums; full sequential semantics remain open."
     },
     {
       "id": "state-references",

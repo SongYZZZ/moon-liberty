@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.1 — 2026-10-26
+
+Conservative validation fixes; public APIs, commands and evaluation scope are
+unchanged. Share table-format validation between the reader and evaluator, reject
+missing/empty axes instead of silently returning a scalar, and enforce resolved
+declared dimensions. Parse CLI budgets as decimal integer literals before range
+checks. Validate selected latch paired attributes and state enums while retaining
+the SR-latch exception. Add eight focused regressions and CLI rejection cases.
+
 ## 0.4.0 — 2026-10-26
 
 Expand directly declared scalar pin aliases such as pin(A,B), with explicit

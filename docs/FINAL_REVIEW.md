@@ -1,66 +1,34 @@
-# MoonLiberty 0.4.0 全面复核（2026-10-26）
+# MoonLiberty 0.4.1 保守复查（2026-10-26）
 
-## 总体结论
+## 结论与范围
 
-本轮结合 osc2026-guide 工程检查项，重新逐模块阅读代码、核对 2017.06 手册、执行边界/资源/性质测试和独立数值对照。新增多名称标量引脚建模、单元局部类型作用域和 ff 必需方程检查，并修复实际正确性问题。**工程和已实现范围验证通过；完整 Liberty 2017.06 兼容仍未完成，不能据此认定官方终审通过。**
+按本轮“优先完整性、减少新功能和新错误”的要求，检查了已有读取、建模、查询、差异、参数、写出、标准检查和测试路径。补丁集中修复已复现的边界问题，并补少量手册明确的 latch 格式规则。公开命令仍为九个，六份生成接口与 0.4.0 一致，求值范围保持不变。完整 2017.06 兼容仍未完成，不能判定官方终审通过。
 
-昨天最后材料提交 ab25abc 的 CI 已核验成功。本版独立建立证据，不用昨天的测试结果替代新代码验证。赛事技能主要覆盖 OSC/八月，本项目仍按十月公开官网及用户提供的申报字段核对，未将八月规则当作十月章程。
+## 发现与修复
 
-## 代码、功能与边界检查
+1. **缺轴表错误返回常数。**原版对 lu_table_template(T){} 或 index_1() 可在 SI query 中返回标量值，绕过预期坐标检查。现在 read_table 复用 read_table_data 的格式校验；具名表必须有非空轴，声明的变量须解析到对应轴，错误返回 TableShape/InvalidLibrary。保持合法 scalar 和局部覆盖行为。
+2. **整数选项接受舍入后的伪整数。**1.00000000000000001 经 Double 舍入被接受。现在先检查十进制整数字面量（可选前导 +），再检查范围；拒绝小数与指数写法。帮助中缺失 expand 的输出参数提示一并修正。
+3. **latch 字段依赖缺失。**按 Reference 2-86—2-89，补 data_in/enable 配对、enable_also 依赖、clear/preset 与组合状态值相互依赖，及 L/H/N/T/X 枚举。合法 SR 锁存器仍可不带 data_in/enable，不作一概必填处理。向量/状态仿真仍不求值。
 
-| 检查面 | 今天发现、修改或确认的结果 |
-| --- | --- |
-| 词法/语法与 include | 沿用字符/token/节点/深度和共享 include 预算；缺失/嵌套/路径片段显式失败；全标准词法清单仍未闭环 |
-| AST 写出与提取 | 注入与分配前预算保护保留；共享 pin 的模型展开不改写原始 AST；提取后的共同声明及库上下文核对一致 |
-| 布尔函数与差异 | 修复格式化把引号信号 0/1 变成常量的问题；特殊名称保持引号、不可表示的调用者 AST 拒绝；diff 能区分同名引脚与常量 |
-| 数值插值 | 极大有限端点在中间值计算时不再因差值溢出错误拒绝；极大坐标跨度按比例计算；真正不可表示的结果继续报 NumericRange |
-| 单位/公开对象 | 不再无条件把 SI 前缀变小写；MV 不会被误算成 mV；单位比例要求正且有限，公开模型中的非有限数值也检查 |
-| 表格维数 | 模板继承的第三轴不能当作二维丢弃；先验证 3D 格式形状，再报告不支持数值求值；格式错误不再伪装成普通不支持警告 |
-| 领域模型 | pin(A,B) 等直接多名称标量声明生成独立可查找记录，引用/重复/查询可用；源 Group 仍保留原声明 |
-| 资源与性能 | ModelLimits 默认 100000 引脚、4000000 估算工作单位；重复属性扫描、条件/函数和表数据计入；超限显式失败 |
-| 标准类型作用域 | 修复合法 cell-local type 被误报的问题，局部定义遮蔽同名库级定义，不影响兄弟单元；查找环境不复制整个全局表 |
-| 状态格式 | ff/ff_bank 需要 next_state 和时钟方程；缺失返回 StandardStateRequired；bank/向量方程仍保留并警告未完整验证 |
-| 未支持容器 | bus/bundle 未进入标量模型时返回 UnexpandedPinContainer，统计与帮助明确只包含直接标量引脚；未假装已展开向量 |
-| CLI 与 IO | 九命令、JSON、实际退出码、覆盖保护/临时文件/UTF-8/错误路径验证；帮助文字补齐 compat 退出 1 的行为 |
-| 后端/API | 329 native；305 JS、305 Wasm GC；严格编译、格式、info、release 构建通过；新公共 API 为 ModelLimits、validate_units 及可选模型预算 |
-| 实际流程 | 多名称引脚检查/查询/提取、引号信号差异、局部 type 和状态反例通过实际 CLI，不只直接调用库测试 |
-| 独立证据 | 原 IHP 312 次、Nangate 72 次实库查询保持核对；新增 Decimal 52 次合成对照；Yosys 结构往返；ASAP7 原始负例仍拒绝 |
-| 项目/材料 | 正式一页 PROJECT_APPLICATION.md、README、模块命名空间、Git origin 同为 SongYZZZ/moon-liberty；无旧项目混入正式附件 |
-| 来源/许可证 | Apache-2.0 原创实现；数据与两种 GPL 测试读取器分开披露；不把数据/第三方工具计入代码规模 |
-| 仓库/历史 | 默认 main、GitHub 公共仓库；实际功能和修复分批提交，未改写历史或做空提交；依赖/构建/下载目录忽略 |
-| 规模 | 49 个 .mbt，7595 行有效代码，其中实现 4915、测试 2680，不计外部数据/缓存/生成文件 |
+主实现较 0.4.0 净减少 42 行，新增 8 项有针对性的回归；没有新增公共 API、命令、依赖或计算模型。原始缺陷已先用 release CLI 复现，再修复验证。
 
-## 测试结果与统计口径
+## 已验证证据
 
-- 单元/黑盒/白盒测试：329 native，核心同组测试在 JS/Wasm 各 305；不把三后端当成三倍不同测试。
-- 原验收 18 次 CLI、标准场景 25 次、不变量流程 61 次；不变量流程包含 52 次 Decimal 查询，不能重复累加。
-- 实库独立查询 384 次＝IHP 312＋Nangate 72。Decimal 合成查询另列；不是新增工艺库或第三方 STA 签核。
-- 2048 个全局 type/2048 单元作用域用例本机 compat 单次约 326.68 ms，含进程及 IO；不设跨机器时间承诺。
-- 机器报告：artifacts/verification.json、standard-cases.json、invariant-audit.json、oracle/report.json、corpus/report.json；CI 上传这些证据。
+- SDK/core 0.10.14+7d59c7ec9；fmt/check --deny-warn、info 和 release 构建。
+- 337 native、核心 JS/Wasm GC 各 312；不按三个后端重复累计不同测试数。
+- 原 CLI 20 次、标准 CLI 29 次、不变量 61 次；后者含 52 次 Decimal 合成数值对照。
+- IHP 312 次、Nangate 72 次实库核对及结构往返/提取；Yosys 固定样本往返；ASAP7 原始缺分号负例保留。
+- 六份生成接口与补丁前逐字比较相同；机器记录在 artifacts/api-041.json。
+- 唯一正式申报书 PROJECT_APPLICATION.md、README、moon.mod 与 Git origin 的项目身份一致。全部历史、源码、环境原位保留。
 
-## 标准与终审仍然存在的实质缺口
+相关实现与回归：table.mbt、table_data.mbt、query_test.mbt、table_data_test.mbt、cli/arguments.mbt 及测试、standard_rules.mbt 及测试、scripts/verify.py、scripts/check-standard.py。原全量工程检查记录保留在 [0.4.0 报告](history/FINAL_REVIEW_0_4.md)。
 
-固定目标仍为 Synopsys Liberty 2017.06 的完整格式，不因本轮做不到而缩成 NLDM 子集。18 族规则是已实现规则目录，不是全部手册条目的清单。下列工作尚未闭环：
+## 未完成项与保守选择
 
-1. 全版本全部分组/属性的字段级 schema、合法词法边界、所有参数/类型/父组/名称引用及对应正反例。
-2. 完整 CCS/ECSM/噪声/全部 LVF 格式约束、物理库 phys_library 等特殊根结构、latch 全部必需属性和其他标准族。
-3. 总线默认范围、自定义命名与完整向量/bank 展开/引用；本轮只补直接多名称标量和局部类型作用域。
-4. 更广泛真实库/版本特性覆盖。ASAP7 当前严格语法拒绝不能写成全面方言兼容；工艺签核不在本工具能力内。
+未在这次补丁中扩张 CCS/LVF 计算、完整向量展开或 phys_library，也没有将全手册字段级 schema 宣称完成。完整标准目标及具体开放项继续见 STANDARD_CONFORMANCE.md 和 standards/liberty-2017.06.json。减少已知错误不等于证明不存在其他错误，也不能以测试数代替完整标准验收。
 
-因此当前 complete_standard_conformance 与 rule_inventory_exhaustive 仍为 false。若按申报的最终完整目标验收，这些仍是必须完成的工作；增加提交数或测试数不替代它们。
+本轮执行已安装赛事技能的工程检查项，并独立核对 [Synopsys 2017.06 手册](https://manuals.plus/m/c06ac2f60609fe732b62ee745595b383be0db873dfee9ab41fc17d3e027c4de1.pdf)与实际 CLI。技能中 OSC/八月章程不被当作十月章程。仅更新代码和仓库材料，不发送邮件、群消息或代填报名表。
 
-## 规则、材料与环境核对
+## 发布与远程证据
 
-[十月官网](https://moonbitlang.github.io/Hackathon2026/)公开源码 App.tsx blob 今日仍为 e27e1d752b573ad88dccf6da681a1492c7dcfe0c；飞书完整章程未成功读取的部分不声称已逐条通过。使用的 [2017.06 手册版本来源](https://manuals.plus/m/c06ac2f60609fe732b62ee745595b383be0db873dfee9ab41fc17d3e027c4de1.pdf)仅引用，不分发正文。局部 type 依据 Reference 2-123—2-124，ff 必需方程依据 2-62—2-68，规则目录同步更新。
-
-工具链维持项目固定的 SDK/core 0.10.14+7d59c7ec9，未改全局 PATH/TEMP 或迁移环境。Windows 的既有 async C 层 EINVAL 宏重定义警告单列，不将 MoonBit 严格检查成功写成所有工具零警告。当前可见技能列表未包含官方 moonbitlang/skills；它不是本次项目编译/运行的前置条件，未擅自替换环境。
-
-公开 GitHub 检索仍只返回本仓库，不覆盖未公开报名。剩余报名次数、群身份和实际表单由参赛者按真实记录确认；本轮只推送代码与材料，不发送邮件/群消息或代填表单。
-
-## 发布和远程记录
-
-0.4.0 发布已返回 200 OK；moon search liberty 显示注册表版本 0.4.0。发布源码基准 753049c93f5548e141d195d4740d85c9849f63b1 的[完整远程 CI](https://github.com/SongYZZZ/moon-liberty/actions/runs/40260494098)已成功，包含三后端、标准/不变量、实库独立对照和报告上传。
-
-归档 SHA-256：38b30de29ecd7e7af0f481b7a88b4fe34aed0cd921845ddfb2002c93aa122e25。精确注册表消费者的 native 实际运行、JS/Wasm 检查通过；49 个 .mbt 和根清单逐字节匹配，具体见 CONSUMER.md。后续完成记录为文档变更，另看 Actions 的对应提交检查，不能将其称作未知新代码通过。
-
-本轮截至发布基准新增六次实质功能/修复/验证/版本提交；发布证据单独提交。旧版报告保留于 history/FINAL_REVIEW_0_3.md。所有历史均保留，未强制推送或创建空提交。
+0.4.1 的发布、注册表消费者和本版 CI 证据完成后追加于此，旧版成功不代替本版验证。

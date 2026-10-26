@@ -28,6 +28,14 @@ fn query_error(
 }
 
 ///|
+test "malformed named tables cannot bypass SI range checks as scalar" {
+  let library = @liberty.load_library(
+    "library(x){time_unit:\"1ns\";capacitive_load_unit(1,pf);lu_table_template(T){}cell(INV){pin(A){direction:input;}pin(Y){direction:output;timing(){related_pin:\"A\";cell_rise(T){values(\"1\");}}}}}",
+  )
+  assert_eq(query_error(library), "InvalidLibrary")
+}
+
+///|
 test "SI query converts both coordinates and the delay result" {
   let query = @liberty.query_timing(
     small_library(),

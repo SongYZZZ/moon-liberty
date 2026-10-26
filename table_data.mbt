@@ -17,6 +17,20 @@ pub extend TableData with @debug.Debug::{to_repr}
 
 ///|
 pub fn validate_table_data(data : TableData) -> Unit raise LibertyError {
+  if data.template_name.is_empty() {
+    raise failure(
+      "MissingTemplate",
+      "format table requires a template name",
+      data.position,
+    )
+  }
+  if (data.template_name == "scalar") != data.axes.is_empty() {
+    raise failure(
+      "TableShape",
+      "only scalar tables have no axes; named templates require nonempty axes",
+      data.position,
+    )
+  }
   if data.axes.length() > 3 {
     raise failure(
       "UnsupportedDimension",
@@ -136,6 +150,17 @@ pub fn read_table_data(
         "lookup table requires values(...) with at least one row",
         group.position,
       )
+  }
+  if template is Some(t) {
+    for index, key in ["variable_1", "variable_2", "variable_3"] {
+      if t.text(key) != None && axes.length() <= index {
+        raise failure(
+          "TableShape",
+          "declared template variable has no resolved axis: " + key,
+          group.position,
+        )
+      }
+    }
   }
   let data : TableData = {
     kind: group.kind,

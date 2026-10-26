@@ -76,106 +76,23 @@ pub fn validate_table(table : Table) -> Unit raise LibertyError {
 
 ///|
 pub fn read_table(group : Group, template? : Group) -> Table raise LibertyError {
-  let reference = group.name()
-  if reference.is_empty() {
-    raise failure(
-      "MissingTemplate",
-      "table needs one template name",
-      group.position,
-    )
-  }
-  if reference != "scalar" && template == None {
-    raise failure(
-      "MissingTemplate",
-      "unknown lookup template: " + reference,
-      group.position,
-    )
-  }
-  if template is Some(t) && t.name() != reference {
-    raise failure(
-      "TemplateMismatch",
-      "supplied template name differs from table reference",
-      group.position,
-    )
-  }
-  if group.complex("index_3") != None ||
-    (
-      template is Some(t) &&
-      (t.text("variable_3") != None || t.complex("index_3") != None)
-    ) {
-    // Unsupported evaluation must not hide malformed 3-D format data.
-    ignore(read_table_data(group, template?))
+  // One format validator prevents the evaluator and compatibility report from
+  // disagreeing about absent, empty, inherited or three-dimensional axes.
+  let data = read_table_data(group, template?)
+  if data.axes.length() > 2 {
     raise failure(
       "UnsupportedDimension",
       "only scalar, 1D and 2D lookup tables are supported",
       group.position,
     )
   }
-  let x = match vector(group, "index_1") {
-    Some(values) => values
-    None =>
-      match template {
-        Some(t) =>
-          match vector(t, "index_1") {
-            Some(v) => v
-            None => []
-          }
-        None => []
-      }
-  }
-  let y = match vector(group, "index_2") {
-    Some(values) => values
-    None =>
-      match template {
-        Some(t) =>
-          match vector(t, "index_2") {
-            Some(v) => v
-            None => []
-          }
-        None => []
-      }
-  }
-  let arguments = match group.complex("values") {
-    Some(arguments) if !arguments.is_empty() => arguments
-    _ =>
-      raise failure(
-        "MissingValues",
-        "lookup table requires values(...)",
-        group.position,
-      )
-  }
-  let rows = arguments.map(argument => {
-    number_list(argument, position=group.position)
-  })
-  if reference == "scalar" && (!x.is_empty() || !y.is_empty()) {
-    raise failure(
-      "TableShape",
-      "scalar template must not have axes",
-      group.position,
-    )
-  }
-  if y.is_empty() && rows.length() != 1 {
-    raise failure(
-      "TableShape",
-      "scalar and 1D tables require exactly one quoted row",
-      group.position,
-    )
-  }
-  if !y.is_empty() &&
-    (rows.length() != x.length() || rows.any(row => row.length() != y.length())) {
-    raise failure(
-      "TableShape",
-      "2D values must have one row per index_1 and one column per index_2",
-      group.position,
-    )
-  }
   let values = []
-  for row in rows {
+  for row in data.rows {
     values.append(row)
   }
   let table : Table = {
     kind: group.kind,
-    template_name: reference,
+    template_name: data.template_name,
     variable_1: match template {
       Some(t) => t.text("variable_1")
       None => None
@@ -184,8 +101,8 @@ pub fn read_table(group : Group, template? : Group) -> Table raise LibertyError 
       Some(t) => t.text("variable_2")
       None => None
     },
-    index_1: x,
-    index_2: y,
+    index_1: data.axes.get(0).unwrap_or([]),
+    index_2: data.axes.get(1).unwrap_or([]),
     values,
     position: group.position,
   }

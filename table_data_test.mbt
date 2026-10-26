@@ -144,3 +144,71 @@ test "public format data is revalidated after array mutation" {
     _ => fail("mutated axis accepted")
   }
 }
+
+///|
+test "named tables cannot silently become scalar when axes are missing or empty" {
+  for
+    template in [
+      "lu_table_template(T){}", "lu_table_template(T){variable_1:input_net_transition;index_1();}",
+    ] {
+    let root = @liberty.parse_liberty(
+      "library(x){" + template + "cell_rise(T){values(\"1\");}}",
+    )
+    for reader in [0, 1] {
+      try {
+        if reader == 0 {
+          ignore(
+            @liberty.read_table_data(
+              root.groups("cell_rise")[0],
+              template=root.groups("lu_table_template")[0],
+            ),
+          )
+        } else {
+          ignore(
+            @liberty.read_table(
+              root.groups("cell_rise")[0],
+              template=root.groups("lu_table_template")[0],
+            ),
+          )
+        }
+      } catch {
+        @liberty.LibertyError(code, _, _) => assert_eq(code, "TableShape")
+      } noraise {
+        _ => fail("missing axes interpreted as constant data")
+      }
+    }
+  }
+}
+
+///|
+test "declared dimensions must resolve axes before any lookup" {
+  let root = @liberty.parse_liberty(
+    "library(x){lu_table_template(T){variable_1:input_net_transition;variable_2:total_output_net_capacitance;index_1(\"1\");}cell_rise(T){values(\"2\");}}",
+  )
+  try
+    @liberty.read_table(
+      root.groups("cell_rise")[0],
+      template=root.groups("lu_table_template")[0],
+    )
+  catch {
+    @liberty.LibertyError(code, _, _) => assert_eq(code, "TableShape")
+  } noraise {
+    _ => fail("declared dimension dropped")
+  }
+}
+
+///|
+test "caller constructed format data respects scalar dimension identity" {
+  let root = @liberty.parse_liberty(
+    "library(x){cell_rise(scalar){values(\"1\");}}",
+  )
+  let scalar = @liberty.read_table_data(root.groups("cell_rise")[0])
+  for
+    invalid in [{ ..scalar, template_name: "T", }, { ..scalar, axes: [[1.0]], }] {
+    try @liberty.validate_table_data(invalid) catch {
+      @liberty.LibertyError(code, _, _) => assert_eq(code, "TableShape")
+    } noraise {
+      _ => fail("format dimension identity ignored")
+    }
+  }
+}

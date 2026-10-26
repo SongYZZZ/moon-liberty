@@ -49,6 +49,54 @@ pub(all) struct Inventory {
 } derive(Eq, Debug)
 
 ///|
+/// Bounds expansion of shared pin declarations and repeated validation work.
+pub(all) struct ModelLimits {
+  max_pins : Int
+  max_work : Int
+} derive(Eq, Debug)
+
+///|
+pub extend ModelLimits with Eq::{equal, not_equal}
+
+///|
+pub extend ModelLimits with @debug.Debug::{to_repr}
+
+///|
+pub fn ModelLimits::default() -> ModelLimits {
+  { max_pins: 100000, max_work: 4000000, }
+}
+
+///|
+fn model_work(
+  timings : Array[TimingArc],
+  function : String?,
+  limit : Int,
+  pos : Position,
+) -> Int raise LibertyError {
+  let mut work = 1 + function.map(s => s.length()).unwrap_or(0)
+  for arc in timings {
+    work += 1 +
+      arc.related_pins.length() +
+      arc.condition.map(s => s.length()).unwrap_or(0)
+    for table in arc.tables {
+      work += 1 +
+        table.index_1.length() +
+        table.index_2.length() +
+        table.values.length()
+      if work > limit {
+        raise failure(
+          "ModelLimit", "expanded validation work exceeds budget", pos,
+        )
+      }
+    }
+  }
+  if work > limit {
+    raise failure("ModelLimit", "expanded validation work exceeds budget", pos)
+  }
+  work
+}
+
+///|
 fn finding(
   error : LibertyError,
   path : String,
@@ -113,7 +161,10 @@ fn timing_table_kind(kind : String) -> Bool {
 }
 
 ///|
-pub fn build_library(root : Group) -> Library raise LibertyError {
+pub fn build_library(
+  root : Group,
+  model_limits? : ModelLimits = ModelLimits::default(),
+) -> Library raise LibertyError {
   if root.kind != "library" || root.name().is_empty() {
     raise failure(
       "InvalidRoot",
@@ -121,6 +172,18 @@ pub fn build_library(root : Group) -> Library raise LibertyError {
       root.position,
     )
   }
+  if model_limits.max_pins < 1 ||
+    model_limits.max_pins > 1000000 ||
+    model_limits.max_work < 1 ||
+    model_limits.max_work > 16000000 {
+    raise failure(
+      "InvalidLimit",
+      "model limits require 1..1000000 pins and 1..16000000 work units",
+      root.position,
+    )
+  }
+  let mut expanded_pins = 0
+  let mut expanded_work = 0
   let findings = []
   let units = Some(read_units(root)) catch {
     error => {
@@ -147,6 +210,16 @@ pub fn build_library(root : Group) -> Library raise LibertyError {
   for cell in root.groups("cell") {
     let cell_path = root.name() + "/cell:" + cell.name()
     let pins = []
+    for container in cell.groups("bus") + cell.groups("bundle") {
+      add_finding(
+        findings,
+        "UnexpandedPinContainer",
+        cell_path + "/" + container.kind + ":" + container.name(),
+        "bus/bundle data is retained; typed inventory and SI queries cover directly declared scalar pins only",
+        container.position,
+        severity=Warning,
+      )
+    }
     for pin in cell.groups("pin") {
       let pin_path = cell_path + "/pin:" + pin.name()
       let timings = []
@@ -186,20 +259,50 @@ pub fn build_library(root : Group) -> Library raise LibertyError {
           position: timing.position,
         })
       }
-      pins.push({
-        name: pin.name(),
-        direction: pin.text("direction"),
-        capacitance: optional_number(pin, "capacitance", pin_path, findings),
-        max_capacitance: optional_number(
-          pin, "max_capacitance", pin_path, findings,
-        ),
-        max_transition: optional_number(
-          pin, "max_transition", pin_path, findings,
-        ),
-        function: pin.text("function"),
+      let names = if !pin.arguments.is_empty() &&
+        pin.arguments.all(args => {
+          args.length() == 1 && !atom_text(args[0]).is_empty()
+        }) {
+        pin.arguments.map(args => atom_text(args[0]))
+      } else {
+        [""]
+      }
+      let capacitance = optional_number(pin, "capacitance", pin_path, findings)
+      let max_capacitance = optional_number(
+        pin, "max_capacitance", pin_path, findings,
+      )
+      let max_transition = optional_number(
+        pin, "max_transition", pin_path, findings,
+      )
+      let function = pin.text("function")
+      let cost = model_work(
         timings,
-        source: pin,
-      })
+        function,
+        model_limits.max_work,
+        pin.position,
+      )
+      for name in names {
+        if expanded_pins >= model_limits.max_pins ||
+          cost > model_limits.max_work - expanded_work {
+          raise failure(
+            "ModelLimit",
+            "expanded pin count or validation work exceeds budget",
+            pin.position,
+          )
+        }
+        expanded_pins += 1
+        expanded_work += cost
+        pins.push({
+          name,
+          direction: pin.text("direction"),
+          capacitance,
+          max_capacitance,
+          max_transition,
+          function,
+          timings,
+          source: pin,
+        })
+      }
     }
     cells.push({
       name: cell.name(),
@@ -215,8 +318,9 @@ pub fn build_library(root : Group) -> Library raise LibertyError {
 pub fn load_library(
   text : String,
   limits? : Limits = Limits::default(),
+  model_limits? : ModelLimits = ModelLimits::default(),
 ) -> Library raise LibertyError {
-  build_library(parse_liberty(text, limits~))
+  build_library(parse_liberty(text, limits~), model_limits~)
 }
 
 ///|

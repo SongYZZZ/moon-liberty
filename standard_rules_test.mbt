@@ -387,6 +387,65 @@ test "duplicate cell local types and invalid type parents are diagnosed" {
 }
 
 ///|
+test "latch data and enable occur as a pair while SR latches remain valid" {
+  assert_true(
+    std_codes("cell(C){latch(Q,QN){data_in:\"0\";}}").contains(
+      "StandardStateRequired",
+    ),
+  )
+  assert_true(
+    std_codes("cell(C){latch(Q,QN){enable_also:\"1\";}}").contains(
+      "StandardStateRequired",
+    ),
+  )
+  assert_eq(std_codes("cell(C){latch(Q,QN){data_in:\"0\";enable:\"1\";}}"), [])
+  assert_eq(
+    std_codes(
+      "cell(C){latch(Q,QN){clear:\"0\";preset:\"1\";clear_preset_var1:L;}}",
+    ),
+    [],
+  )
+}
+
+///|
+test "latch asynchronous controls and combined state flags require one another" {
+  assert_true(
+    std_codes("cell(C){latch(Q,QN){clear:\"0\";preset:\"1\";}}").contains(
+      "StandardStateRequired",
+    ),
+  )
+  assert_true(
+    std_codes("cell(C){latch(Q,QN){clear_preset_var2:H;}}").contains(
+      "StandardStateRequired",
+    ),
+  )
+  assert_true(
+    std_codes("cell(C){latch_bank(Q,QN,2){data_in:\"0\";}}").contains(
+      "StandardStateRequired",
+    ),
+  )
+}
+
+///|
+test "state value enumerations are checked without treating them as expressions" {
+  for value in ["L", "H", "N", "T", "X"] {
+    assert_eq(
+      std_codes(
+        "cell(C){latch(Q,QN){clear:\"0\";preset:\"1\";clear_preset_var1:" +
+        value +
+        ";}}",
+      ),
+      [],
+    )
+  }
+  assert_true(
+    std_codes(
+      "cell(C){latch(Q,QN){clear:\"0\";preset:\"1\";clear_preset_var1:bad;}}",
+    ).contains("StandardAttributeType"),
+  )
+}
+
+///|
 test "negative transition is also rejected by domain lint and query" {
   let library = @liberty.load_library(
     "library(x){time_unit:\"1ns\";capacitive_load_unit(1,pf);" +

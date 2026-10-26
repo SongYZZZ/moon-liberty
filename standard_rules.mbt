@@ -65,6 +65,10 @@ fn std_lvf_table(kind : String) -> Bool {
 
 ///|
 fn std_attr_type(kind : String, name : String) -> String? {
+  if ["ff", "ff_bank", "latch", "latch_bank"].contains(kind) &&
+    ["clear_preset_var1", "clear_preset_var2"].contains(name) {
+    return Some("state-value")
+  }
   if kind == "type" {
     return match name {
       "base_type" => Some("array")
@@ -156,6 +160,7 @@ fn std_value_valid(value_type : String, atoms : Array[Atom]) -> Bool {
     "bit" => text == "bit"
     "direction" => ["input", "output", "inout", "internal"].contains(text)
     "sense" => ["positive_unate", "negative_unate", "non_unate"].contains(text)
+    "state-value" => ["L", "H", "N", "T", "X"].contains(text)
     "atom" => !text.is_empty()
     _ => attribute_value_valid(value_type, atoms)
   }
@@ -540,6 +545,25 @@ fn std_state(
   path : String,
   findings : Array[Finding],
 ) -> Unit {
+  if group.kind == "latch" || group.kind == "latch_bank" {
+    let data = group.attribute("data_in") != None
+    let enable = group.attribute("enable") != None
+    if data != enable ||
+      (group.attribute("enable_also") != None && !(data && enable)) {
+      std_issue(
+        findings, "StandardStateRequired", group, path, "latch data_in and enable must occur together; enable_also requires both",
+      )
+    }
+    let controls = group.attribute("clear") != None &&
+      group.attribute("preset") != None
+    let combined_value = group.attribute("clear_preset_var1") != None ||
+      group.attribute("clear_preset_var2") != None
+    if controls != combined_value {
+      std_issue(
+        findings, "StandardStateRequired", group, path, "latch clear/preset pair requires a combined state value, and conversely",
+      )
+    }
+  }
   if group.kind == "ff" || group.kind == "ff_bank" {
     if group.text("next_state").unwrap_or("").is_empty() {
       std_issue(

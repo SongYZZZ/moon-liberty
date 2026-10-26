@@ -101,6 +101,9 @@ def main():
 
         # Exercise the new rules through the shipped CLI, not just direct API calls.
         cases = [
+            ('lu_table_template(T){}cell(C){pin(Y){timing(){cell_rise(T){values("1");}}}}', "TableShape"),
+            ('cell(C){latch(Q,QN){data_in:"0";}}', "StandardStateRequired"),
+            ('cell(C){latch(Q,QN){clear:"0";preset:"1";}}', "StandardStateRequired"),
             ('cell(C){ff(Q,QN){clocked_on:"1";}}', "StandardStateRequired"),
             ("cell(C){area:not_a_number;}", "StandardAttributeType"),
             ("pin(A){}", "StandardGroupParent"),
@@ -116,6 +119,9 @@ def main():
             case.write_text("library(x){" + body + "}", encoding="utf-8")
             report = run("compat", case, *profile, code=1)
             assert expected in {f["code"] for f in report["findings"]}
+        sr = tmp / "sr-latch.lib"
+        sr.write_text('library(x){cell(C){latch(Q,QN){clear:"0";preset:"1";clear_preset_var1:L;}}}', encoding="utf-8")
+        assert run("compat", sr, *profile)["implemented_checks_passed"]
 
     report = dict(target_standard="Liberty 2017.06", cli_checks=checks,
                   complete_standard_conformance=False, include_and_scalar_query=True,

@@ -23,6 +23,15 @@ fn positive_integer(
   value : String,
   maximum : Int,
 ) -> Int raise @liberty.LibertyError {
+  let start = if value.has_prefix("+") { 1 } else { 0 }
+  if value.length() == start {
+    raise usage("expected positive decimal integer <= \{maximum}")
+  }
+  for i = start; i < value.length(); i = i + 1 {
+    if value[i] < 48 || value[i] > 57 {
+      raise usage("expected positive decimal integer <= \{maximum}")
+    }
+  }
   let number = @liberty.finite_number(value)
   if number < 1.0 ||
     number > maximum.to_double() ||
@@ -120,10 +129,10 @@ pub fn parse_arguments(
     command == "extract" ||
     command == "expand"
   if writes && !options.contains("--output") {
-    raise usage("use --output PATH for normalize/extract")
+    raise usage("use --output PATH for normalize/extract/expand")
   }
   if flags.contains("--force") && !writes {
-    raise usage("--force only applies to normalize/extract")
+    raise usage("--force only applies to normalize/extract/expand")
   }
   for key, _ in options {
     let allowed = match key {

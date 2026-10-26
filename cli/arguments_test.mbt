@@ -100,6 +100,23 @@ test "diff report budget must be a bounded positive integer" {
 }
 
 ///|
+test "integer options reject rounded fractions and scientific notation" {
+  for
+    value in [
+      "1.00000000000000001", "1.999999999999999999", "2.0", "1e1", " 2", "+",
+    ] {
+    assert_eq(rejected(["truth", "A", "--max-inputs", value]), "Usage")
+    assert_eq(
+      rejected(["diff", "a.lib", "b.lib", "--max-changes", value]),
+      "Usage",
+    )
+  }
+  assert_true(
+    @cli.parse_arguments(["truth", "A", "--max-inputs", "+02"]) is Run(_),
+  )
+}
+
+///|
 test "truth table budget is explicitly capped" {
   assert_eq(rejected(["truth", "A", "--max-inputs", "17"]), "Usage")
 }

@@ -59,4 +59,8 @@
 
 ## 发布和远程记录
 
-0.4.0 的发布、精确消费者和新远程 CI 完成后在此追加可核验记录。旧版报告保留于 history/FINAL_REVIEW_0_3.md，不能作为本版发布证据。
+0.4.0 发布已返回 200 OK；moon search liberty 显示注册表版本 0.4.0。发布源码基准 753049c93f5548e141d195d4740d85c9849f63b1 的[完整远程 CI](https://github.com/SongYZZZ/moon-liberty/actions/runs/40260494098)已成功，包含三后端、标准/不变量、实库独立对照和报告上传。
+
+归档 SHA-256：38b30de29ecd7e7af0f481b7a88b4fe34aed0cd921845ddfb2002c93aa122e25。精确注册表消费者的 native 实际运行、JS/Wasm 检查通过；49 个 .mbt 和根清单逐字节匹配，具体见 CONSUMER.md。后续完成记录为文档变更，另看 Actions 的对应提交检查，不能将其称作未知新代码通过。
+
+本轮截至发布基准新增六次实质功能/修复/验证/版本提交；发布证据单独提交。旧版报告保留于 history/FINAL_REVIEW_0_3.md。所有历史均保留，未强制推送或创建空提交。

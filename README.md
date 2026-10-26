@@ -33,7 +33,7 @@ moon run cmd/moon-liberty -- lint tests/fixtures/ihp-sg13g2-typ.lib --json
 moon run cmd/moon-liberty -- query tests/fixtures/ihp-sg13g2-typ.lib --cell sg13g2_inv_1 --pin Y --related A --table cell_rise --slew 1e-10 --load 2e-14 --json
 ```
 
-公开 IHP SG13G2 样本的实际结果为 **84 单元、285 引脚、384 时序弧、1199 表格**，当前规则下 lint 为 0 错误、0 警告。上面的查询得到约 **1.1540884836886307e-10 秒**，未钳位、未外推。这个结果只表示该表的插值结果。
+公开 IHP SG13G2 样本的实际结果为 **84 单元、285 引脚、384 时序弧、1199 表格**，当前规则下 lint 为 0 错误、0 警告。上面的查询得到约 **1.1540884836886305e-10 秒**，未钳位、未外推。这个结果只表示该表的插值结果。
 
 格式化、比较、提取与布尔函数：
 

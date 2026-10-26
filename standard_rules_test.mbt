@@ -194,12 +194,18 @@ test "state groups require distinct names and positive bank widths" {
       ),
     )
   }
-  assert_eq(std_codes("cell(C){ff_bank(Q,QN,4){}}"), [])
+  assert_eq(
+    std_codes("cell(C){ff_bank(Q,QN,4){next_state:\"0\";clocked_on:\"1\";}}"),
+    [],
+  )
 }
 
 ///|
 test "state expressions resolve cell inputs and internal nodes" {
-  assert_eq(std_codes("cell(C){pin(CK){}ff(Q,QN){clocked_on:(CK);}}"), [])
+  assert_eq(
+    std_codes("cell(C){pin(CK){}ff(Q,QN){clocked_on:(CK);next_state:\"0\";}}"),
+    [],
+  )
   assert_eq(
     std_codes(
       "cell(C){pin(D){direction:input;}pin(CK){direction:input;}ff(Q,QN){clocked_on:\"CK\";next_state:\"D ^ Q\";}}",
@@ -309,7 +315,7 @@ test "public standard checks bound caller constructed syntax before recursion" {
 ///|
 test "vector bank equations are preserved and explicitly unvalidated" {
   let root = @liberty.parse_liberty(
-    "library(x){cell(C){ff_bank(Q,QN,4){next_state:\"D[3:0]\";}}}",
+    "library(x){cell(C){ff_bank(Q,QN,4){next_state:\"D[3:0]\";clocked_on:\"1\";}}}",
   )
   let findings = @liberty.standard_findings(root)
   assert_eq(findings.filter(f => f.severity == @liberty.Error), [])
@@ -317,6 +323,66 @@ test "vector bank equations are preserved and explicitly unvalidated" {
     findings.any(f => {
       f.code == "UnsupportedVectorExpression" && f.severity == @liberty.Warning
     }),
+  )
+}
+
+///|
+test "flip flop declarations require state and clock equations" {
+  assert_true(
+    std_codes("cell(C){ff(Q,QN){clocked_on:\"1\";}}").contains(
+      "StandardStateRequired",
+    ),
+  )
+  assert_true(
+    std_codes("cell(C){ff(Q,QN){next_state:\"0\";}}").contains(
+      "StandardStateRequired",
+    ),
+  )
+  assert_eq(
+    std_codes("cell(C){ff(Q,QN){next_state:\"0\";clocked_on_also:\"1\";}}"),
+    [],
+  )
+}
+
+///|
+test "empty required flip flop equations cannot appear complete" {
+  assert_true(
+    std_codes("cell(C){ff(Q,QN){next_state:\"\";clocked_on:\"\";}}").contains(
+      "StandardStateRequired",
+    ),
+  )
+}
+
+///|
+test "cell local type declarations are valid bus definitions" {
+  assert_eq(
+    std_codes("cell(C){" + std_type() + "bus(D){bus_type:word;pin(D[3:0]){}}}"),
+    [],
+  )
+}
+
+///|
+test "cell local type shadows global definition without leaking to siblings" {
+  let global = "type(W){bit_width:2;bit_from:0;bit_to:1;}"
+  let cell_type = "type(W){bit_width:2;bit_from:4;bit_to:5;}"
+  assert_eq(
+    std_codes(
+      global +
+      "cell(A){" +
+      cell_type +
+      "bus(D){bus_type:W;pin(D[4]){}}}cell(B){bus(D){bus_type:W;pin(D[0]){}}}",
+    ),
+    [],
+  )
+}
+
+///|
+test "duplicate cell local types and invalid type parents are diagnosed" {
+  assert_true(
+    std_codes("cell(C){type(T){}type(T){}}").contains("DuplicateType"),
+  )
+  assert_true(
+    std_codes("cell(C){pin(A){type(T){}}}").contains("StandardGroupParent"),
   )
 }
 

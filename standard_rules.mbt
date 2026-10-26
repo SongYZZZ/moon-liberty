@@ -16,11 +16,11 @@ fn std_parents(kind : String) -> Array[String]? {
   }
   match kind {
     "cell"
-    | "type"
     | "lu_table_template"
     | "power_lut_template"
     | "operating_conditions"
     | "wire_load" => Some(["library"])
+    "type" => Some(["library", "cell"])
     "pin" =>
       Some(["cell", "test_cell", "scaled_cell", "model", "bus", "bundle"])
     "bus"
@@ -528,6 +528,23 @@ fn std_state(
   path : String,
   findings : Array[Finding],
 ) -> Unit {
+  if group.kind == "ff" || group.kind == "ff_bank" {
+    if group.text("next_state").unwrap_or("").is_empty() {
+      std_issue(
+        findings,
+        "StandardStateRequired",
+        group,
+        path + "/next_state",
+        "ff and ff_bank require next_state",
+      )
+    }
+    if group.text("clocked_on").unwrap_or("").is_empty() &&
+      group.text("clocked_on_also").unwrap_or("").is_empty() {
+      std_issue(
+        findings, "StandardStateRequired", group, path, "flip-flop requires a clock equation",
+      )
+    }
+  }
   let bank = group.kind == "ff_bank" || group.kind == "latch_bank"
   let arity = if bank { 3 } else { 2 }
   if group.arguments.length() != arity ||
@@ -679,6 +696,32 @@ fn std_walk(
   findings : Array[Finding],
 ) -> Unit {
   std_group_rules(group, parent, path, findings)
+  // A type declared in a cell is local and shadows the library's type without
+  // changing the environment of sibling cells (Reference Manual 2-123).
+  let local_types = if group.kind == "cell" {
+    let merged : Map[String, Group] = Map([])
+    for name, definition in types {
+      merged[name] = definition
+    }
+    let seen : Map[String, Bool] = Map([])
+    for definition in group.groups("type") {
+      if seen.contains(definition.name()) {
+        std_issue(
+          findings,
+          "DuplicateType",
+          definition,
+          path + "/type",
+          "cell-local bus type is duplicated",
+        )
+      } else {
+        merged[definition.name()] = definition
+        seen[definition.name()] = true
+      }
+    }
+    merged
+  } else {
+    types
+  }
   let scope = if ["cell", "test_cell", "scaled_cell", "model"].contains(
       group.kind,
     ) {
@@ -690,7 +733,7 @@ fn std_walk(
     "lu_table_template" | "power_lut_template" =>
       std_template(group, path, findings)
     "type" => std_bus_type(group, path, findings)
-    "bus" => std_bus(group, types, path, findings)
+    "bus" => std_bus(group, local_types, path, findings)
     "ff" | "ff_bank" | "latch" | "latch_bank" =>
       std_state(group, scope, path, findings)
     "statetable" => std_statetable(group, scope, path, findings)
@@ -708,7 +751,7 @@ fn std_walk(
         group.kind,
         scope,
         templates,
-        types,
+        local_types,
         path + "/" + child.kind + "(" + child.name() + ")",
         findings,
       )

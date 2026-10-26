@@ -1,0 +1,18 @@
+/* Original multi-name scalar pin regression; not characterized silicon data. */
+library (shared_pins) {
+  delay_model : table_lookup;
+  time_unit : "1ns";
+  capacitive_load_unit (1, pf);
+  cell (AND2_DUAL) {
+    pin (A, B) { direction : input; capacitance : 0.02; }
+    pin (Y, Z) {
+      direction : output;
+      function : "A & B";
+      timing () {
+        related_pin : "A B";
+        timing_type : combinational;
+        cell_rise (scalar) { values ("0.03"); }
+      }
+    }
+  }
+}

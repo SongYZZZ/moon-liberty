@@ -36,6 +36,12 @@ def main():
     for material in ("PROJECT_APPLICATION.md", "README.md", "docs/STANDARD_CONFORMANCE.md"):
         assert "2017.06" in (ROOT / material).read_text(encoding="utf-8")
     profile = ["--standard", "2017.06", "--json"]
+    shared = FIXTURES / "shared-pins.lib"
+    assert run("inspect", shared, "--json")["pins"] == 4
+    assert run("lint", shared, "--json")["errors"] == 0
+    shared_query = run("query", shared, "--cell", "AND2_DUAL", "--pin", "Z", "--related", "B",
+                       "--table", "cell_rise", "--slew", "1e-11", "--load", "1e-15", "--json")
+    assert math.isclose(shared_query["seconds"], 3e-11, rel_tol=1e-12)
     rules = json.loads((ROOT / "docs/standards/implemented-rules.json").read_text(encoding="utf-8"))
     assert rules["exhaustive_manual_inventory"] is False
     assert len({r["id"] for r in rules["rules"]}) == len(rules["rules"])
@@ -95,6 +101,7 @@ def main():
 
         # Exercise the new rules through the shipped CLI, not just direct API calls.
         cases = [
+            ('cell(C){ff(Q,QN){clocked_on:"1";}}', "StandardStateRequired"),
             ("cell(C){area:not_a_number;}", "StandardAttributeType"),
             ("pin(A){}", "StandardGroupParent"),
             ("type(T){bit_width:3;bit_from:3;bit_to:0;}", "StandardBusRange"),

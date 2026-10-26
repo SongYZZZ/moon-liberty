@@ -181,7 +181,7 @@ pub fn help(command : String) -> String {
     "expand" =>
       "Usage: moon-liberty expand FILE --standard 2017.06 [--sources JSON] -o OUTPUT [--force] [--json]\nExpand include_file from an explicit JSON source-text map; no implicit file reads.\n"
     "inspect" =>
-      "Usage: moon-liberty inspect FILE [--json]\nInventory cells, pins, arcs, tables and physical unit scales.\n"
+      "Usage: moon-liberty inspect FILE [--json]\nInventory cells, directly declared scalar pins (shared names expanded), arcs, tables and unit scales. Bus/bundle omissions are reported as warnings.\n"
     "lint" =>
       "Usage: moon-liberty lint FILE [--json]\nCheck model structure, references, functions and supported lookup tables. Exit 1 for findings at error level.\n"
     "query" =>
@@ -199,5 +199,5 @@ pub fn help(command : String) -> String {
   }
   prefix +
   body +
-  "Exit 0: success/no differences; 1: lint errors/differences; 2: usage, parsing, unsupported query or IO error.\n"
+  "Exit 0: success/no differences; 1: lint/compat errors or diff changes; 2: usage, parsing, unsupported query or IO error.\n"
 }

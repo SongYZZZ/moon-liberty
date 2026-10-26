@@ -97,3 +97,15 @@ test "unexpanded vector containers produce an explicit model coverage warning" {
   )
   assert_eq(library.source.groups("cell")[0].groups("bus").length(), 1)
 }
+
+///|
+test "shared pin work accounts for repeated preserved property scans" {
+  let input = "library(x){cell(C){pin(A,B,C,D){p1:1;p2:2;p3:3;p4:4;}}}"
+  try
+    @liberty.load_library(input, model_limits={ max_pins: 100, max_work: 10, })
+  catch {
+    @liberty.LibertyError(code, _, _) => assert_eq(code, "ModelLimit")
+  } noraise {
+    _ => fail("shared metadata scan budget ignored")
+  }
+}

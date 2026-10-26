@@ -70,10 +70,28 @@ pub fn ModelLimits::default() -> ModelLimits {
 fn model_work(
   timings : Array[TimingArc],
   function : String?,
+  source : Group,
   limit : Int,
   pos : Position,
 ) -> Int raise LibertyError {
-  let mut work = 1 + function.map(s => s.length()).unwrap_or(0)
+  let mut work = 1 +
+    source.items.length() +
+    function.map(s => s.length()).unwrap_or(0)
+  for item in source.items {
+    if item is Section(timing) && timing.kind == "timing" {
+      work += timing.items.length()
+      for node in timing.items {
+        if node is Section(table) && timing_table_kind(table.kind) {
+          work += table.items.length()
+          if work > limit {
+            raise failure(
+              "ModelLimit", "expanded validation work exceeds budget", pos,
+            )
+          }
+        }
+      }
+    }
+  }
   for arc in timings {
     work += 1 +
       arc.related_pins.length() +
@@ -278,6 +296,7 @@ pub fn build_library(
       let cost = model_work(
         timings,
         function,
+        pin,
         model_limits.max_work,
         pin.position,
       )

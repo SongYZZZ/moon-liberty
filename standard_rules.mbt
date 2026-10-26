@@ -414,18 +414,31 @@ fn std_bus_type(
 }
 
 ///|
+priv struct TypeScope {
+  library : Map[String, Group]
+  cell : Map[String, Group]
+}
+
+///|
 fn std_bus(
   group : Group,
-  types : Map[String, Group],
+  types : TypeScope,
   path : String,
   findings : Array[Finding],
 ) -> Unit {
   let name = group.text("bus_type").unwrap_or("")
-  if !types.contains(name) {
-    std_issue(
-      findings, "StandardBusType", group, path, "bus_type must reference a declared library type",
-    )
-    return
+  let definition = match types.cell.get(name) {
+    Some(definition) => definition
+    None =>
+      match types.library.get(name) {
+        Some(definition) => definition
+        None => {
+          std_issue(
+            findings, "StandardBusType", group, path, "bus_type must reference a declared visible type",
+          )
+          return
+        }
+      }
   }
   let first = group.items.get(0)
   if !(first is Some(Attribute("bus_type", _, _))) {
@@ -433,7 +446,6 @@ fn std_bus(
       findings, "StandardBusType", group, path, "bus_type must be the first statement in bus",
     )
   }
-  let definition = types[name]
   let from = std_integer(definition, "bit_from", path, findings)
   let to = std_integer(definition, "bit_to", path, findings)
   for pin in group.groups("pin") {
@@ -691,7 +703,7 @@ fn std_walk(
   parent : String,
   cell : Group?,
   templates : Map[String, Group],
-  types : Map[String, Group],
+  types : TypeScope,
   path : String,
   findings : Array[Finding],
 ) -> Unit {
@@ -699,13 +711,9 @@ fn std_walk(
   // A type declared in a cell is local and shadows the library's type without
   // changing the environment of sibling cells (Reference Manual 2-123).
   let local_types = if group.kind == "cell" {
-    let merged : Map[String, Group] = Map([])
-    for name, definition in types {
-      merged[name] = definition
-    }
-    let seen : Map[String, Bool] = Map([])
+    let declarations : Map[String, Group] = Map([])
     for definition in group.groups("type") {
-      if seen.contains(definition.name()) {
+      if declarations.contains(definition.name()) {
         std_issue(
           findings,
           "DuplicateType",
@@ -714,11 +722,10 @@ fn std_walk(
           "cell-local bus type is duplicated",
         )
       } else {
-        merged[definition.name()] = definition
-        seen[definition.name()] = true
+        declarations[definition.name()] = definition
       }
     }
-    merged
+    { library: types.library, cell: declarations, }
   } else {
     types
   }
@@ -805,7 +812,7 @@ fn collect_standard_findings(root : Group) -> Array[Finding] {
     "",
     None,
     templates,
-    types,
+    { library: types, cell: Map([]), },
     "/library(" + root.name() + ")",
     findings,
   )

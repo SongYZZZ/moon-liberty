@@ -31,4 +31,8 @@
 
 ## 发布与远程证据
 
-0.4.1 的发布、注册表消费者和本版 CI 证据完成后追加于此，旧版成功不代替本版验证。
+发布源码基准 41a4bd5c7c4f6e43d12892695a4c72a113e7e037 的[完整远程 CI](https://github.com/SongYZZZ/moon-liberty/actions/runs/40336131351)已通过。0.4.1 已发布，服务器返回 200 OK；归档 SHA-256：c4023740609bb12c30ae7c3d8e66da9fc7ca7c7bbc606460bfbfaba532daffd8。
+
+独立注册表消费者通过 native 运行、JS/Wasm GC 检查，49 个 .mbt 及根清单逐字节匹配，确认缺轴拒绝和 SR 例外实际存在于公开包，见 CONSUMER.md。原始三项 CLI 缺陷也已复跑：缺轴/空轴 query 返回 2 且诊断 TableShape，伪整数参数返回 2 且诊断 Usage。
+
+两次实际修复提交后以发布和验证记录提交收尾，Git 历史原位保留，没有空提交或强制推送。后续证据文档提交的状态在 Actions 单独核验，不以旧版 CI 冒充新代码通过。

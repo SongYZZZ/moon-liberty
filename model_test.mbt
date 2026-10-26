@@ -109,7 +109,7 @@ test "unrecognized groups remain available through the source AST" {
 ///|
 test "unsupported 3D tables are visible as warnings and remain in the AST" {
   let library = @liberty.load_library(
-    "library(x){lu_table_template(T){variable_3:unknown;}cell(A){pin(Y){timing(){cell_rise(T){index_3(\"1\");values(\"1\");}}}}}",
+    "library(x){lu_table_template(T){variable_1:input_net_transition;variable_2:total_output_net_capacitance;variable_3:unknown;index_1(\"1\");index_2(\"1\");index_3(\"1\");}cell(A){pin(Y){timing(){cell_rise(T){values(\"1\");}}}}}",
   )
   assert_true(
     library.findings.any(f => {

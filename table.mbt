@@ -99,7 +99,12 @@ pub fn read_table(group : Group, template? : Group) -> Table raise LibertyError 
     )
   }
   if group.complex("index_3") != None ||
-    (template is Some(t) && t.text("variable_3") != None) {
+    (
+      template is Some(t) &&
+      (t.text("variable_3") != None || t.complex("index_3") != None)
+    ) {
+    // Unsupported evaluation must not hide malformed 3-D format data.
+    ignore(read_table_data(group, template?))
     raise failure(
       "UnsupportedDimension",
       "only scalar, 1D and 2D lookup tables are supported",
@@ -239,7 +244,13 @@ fn locate(
       high = middle
     }
   }
-  let fraction = (coordinate - axis[low]) / (axis[high] - axis[low])
+  let difference = coordinate - axis[low]
+  let span = axis[high] - axis[low]
+  let fraction = if difference.is_inf() || span.is_inf() {
+    (coordinate / 2.0 - axis[low] / 2.0) / (axis[high] / 2.0 - axis[low] / 2.0)
+  } else {
+    difference / span
+  }
   if fraction.is_inf() || fraction.is_nan() {
     raise failure("NumericRange", "interpolation weight is not finite", pos)
   }
@@ -248,7 +259,27 @@ fn locate(
 
 ///|
 fn interpolate(a : Double, b : Double, fraction : Double) -> Double {
-  a + (b - a) * fraction
+  if fraction == 0.0 {
+    return a
+  }
+  if fraction == 1.0 {
+    return b
+  }
+  if fraction > 0.0 && fraction < 1.0 {
+    return (1.0 - fraction) * a + fraction * b
+  }
+  let difference = b - a
+  if !difference.is_inf() {
+    return a + difference * fraction
+  }
+  // Opposite extreme endpoints can overflow the difference even when a small
+  // extrapolation beyond one endpoint is representable.
+  if fraction > 1.0 {
+    let extra = fraction - 1.0
+    b + (b * extra - a * extra)
+  } else {
+    a + (b * fraction - a * fraction)
+  }
 }
 
 ///|

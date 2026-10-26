@@ -5,4 +5,5 @@ import {
 
 import {
   "SongYZZZ/moon-liberty" @liberty,
+  "moonbitlang/core/double",
 } for "test"

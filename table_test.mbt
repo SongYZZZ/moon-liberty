@@ -253,7 +253,7 @@ test "two dimensional rows cannot be transposed silently" {
 ///|
 test "three dimensional tables are explicitly unsupported" {
   let root = @liberty.parse_liberty(
-    "library(x){cell_rise(T){index_3(\"1,2\");values(\"1,2\");}lu_table_template(T){}}",
+    "library(x){cell_rise(T){index_1(\"1\");index_2(\"1\");index_3(\"1,2\");values(\"1,2\");}lu_table_template(T){}}",
   )
   try
     @liberty.read_table(

@@ -335,7 +335,19 @@ pub fn truth_table(
 ///|
 fn format_logic_inner(expression : Logic) -> String {
   match expression {
-    Signal(name) => name
+    Signal(name) => {
+      let mut bare = !name.is_empty() && !(name[0] >= 48 && name[0] <= 57)
+      for i = 0; i < name.length(); i = i + 1 {
+        if !logic_identifier(name[i]) {
+          bare = false
+        }
+      }
+      if bare {
+        name
+      } else {
+        "\"" + name + "\""
+      }
+    }
     Constant(true) => "1"
     Constant(false) => "0"
     Not(inner) => "!(" + format_logic_inner(inner) + ")"
@@ -351,7 +363,23 @@ fn format_logic_inner(expression : Logic) -> String {
 ///|
 pub fn format_logic(expression : Logic) -> String raise LibertyError {
   ignore(logic_signals(expression))
-  format_logic_inner(expression)
+  let text = format_logic_inner(expression)
+  let reparsed = parse_logic(text) catch {
+    _ =>
+      raise failure(
+        "InvalidLogicAst",
+        "signal names cannot be represented without changing meaning",
+        no_position(),
+      )
+  }
+  if reparsed != expression {
+    raise failure(
+      "InvalidLogicAst",
+      "formatter would change the Boolean expression",
+      no_position(),
+    )
+  }
+  text
 }
 
 ///|

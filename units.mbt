@@ -36,7 +36,7 @@ pub fn parse_unit(
   text : String,
   quantity : Quantity,
 ) -> Double raise LibertyError {
-  let value = text.trim().to_owned().to_lower()
+  let value = text.trim().to_owned()
   let suffixes : Array[(String, Double)] = match quantity {
     Time =>
       [
@@ -49,13 +49,26 @@ pub fn parse_unit(
       ]
     Capacitance =>
       [
+        ("uF", 1.0e-6),
+        ("nF", 1.0e-9),
+        ("pF", 1.0e-12),
+        ("fF", 1.0e-15),
         ("uf", 1.0e-6),
         ("nf", 1.0e-9),
         ("pf", 1.0e-12),
         ("ff", 1.0e-15),
+        ("F", 1.0),
         ("f", 1.0),
       ]
-    Voltage => [("mv", 1.0e-3), ("uv", 1.0e-6), ("v", 1.0)]
+    Voltage =>
+      [
+        ("mV", 1.0e-3),
+        ("uV", 1.0e-6),
+        ("mv", 1.0e-3),
+        ("uv", 1.0e-6),
+        ("V", 1.0),
+        ("v", 1.0),
+      ]
   }
   for entry in suffixes {
     if value.has_suffix(entry.0) {
@@ -73,6 +86,22 @@ pub fn parse_unit(
     }
   }
   raise failure("UnsupportedUnit", "unsupported unit: " + text, no_position())
+}
+
+///|
+/// Validate public, possibly caller-constructed unit scales before arithmetic.
+pub fn validate_units(units : Units) -> Unit raise LibertyError {
+  let scales = [units.time_seconds, units.capacitance_farads]
+  if units.voltage_volts is Some(voltage) {
+    scales.push(voltage)
+  }
+  if scales.any(scale => scale <= 0.0 || scale.is_nan() || scale.is_inf()) {
+    raise failure(
+      "InvalidUnit",
+      "all declared SI scales must be positive and finite",
+      no_position(),
+    )
+  }
 }
 
 ///|

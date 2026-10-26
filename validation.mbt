@@ -77,6 +77,11 @@ fn check_logic(
 ///|
 pub fn lint_library(library : Library) -> Array[Finding] {
   let findings = library.findings.copy()
+  if library.units is Some(units) {
+    validate_units(units) catch {
+      error => findings.push(finding(error, library.name + "/units"))
+    }
+  }
   duplicate_properties(library.source, library.name, findings)
   let cell_names : Map[String, Bool] = Map([])
   if library.cells.is_empty() {
@@ -127,12 +132,16 @@ pub fn lint_library(library : Library) -> Array[Finding] {
       )
     }
     cell_names[cell.name] = true
-    if cell.area is Some(area) && area < 0.0 {
+    if cell.area is Some(area) && (area < 0.0 || area.is_nan() || area.is_inf()) {
       add_finding(
         findings,
-        "NegativeArea",
+        if area.is_nan() || area.is_inf() {
+          "NonFiniteNumber"
+        } else {
+          "NegativeArea"
+        },
         path + "/area",
-        "cell area cannot be negative",
+        "cell area must be finite and nonnegative",
         simple_position(cell.source, "area"),
       )
     }
@@ -198,12 +207,17 @@ pub fn lint_library(library : Library) -> Array[Finding] {
           ("max_capacitance", pin.max_capacitance),
           ("max_transition", pin.max_transition),
         ] {
-        if property.1 is Some(value) && value < 0.0 {
+        if property.1 is Some(value) &&
+          (value < 0.0 || value.is_nan() || value.is_inf()) {
           add_finding(
             findings,
-            "NegativePinLimit",
+            if value.is_nan() || value.is_inf() {
+              "NonFiniteNumber"
+            } else {
+              "NegativePinLimit"
+            },
             pin_path + "/" + property.0,
-            "capacitance/transition value cannot be negative",
+            "capacitance/transition value must be finite and nonnegative",
             simple_position(pin.source, property.0),
           )
         }

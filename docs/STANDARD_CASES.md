@@ -1,6 +1,6 @@
 # 2017.06 兼容与求值边界案例
 
-2026-10-26 按 0.4.1 重新实际运行。以下输入为本项目原创结构/反例数据，Apache-2.0；不是来自手册的复制示例，也不是表征完成的工艺库，不能证明完整标准符合性。
+2026-10-28 按 0.4.2 重新实际运行。以下输入为本项目原创结构/反例数据，Apache-2.0；不是来自手册的复制示例，也不是表征完成的工艺库，不能证明完整标准符合性。
 
 ## A：完整语句 include 与单位化查询
 
@@ -45,12 +45,16 @@ moon build --release --deny-warn
 python scripts/check-standard.py --executable _build/native/release/build/cmd/moon-liberty/moon-liberty.exe
 ```
 
-本次自动脚本 29 次 CLI 执行断言全部通过，报告为 artifacts/standard-cases.json。除上述三个场景，还验证错误 JSON 源映射、嵌套 include 拒绝、保留字段、完整符合性字段恒为 false，以及总线、状态表、LVF/模板、负转换时间等八类格式反例。持续集成重复执行。
+本次自动脚本 29 次 CLI 执行断言全部通过，报告为 artifacts/standard-cases.json。除上述三个场景，还验证错误 JSON 源映射、嵌套 include 拒绝、保留字段、完整符合性字段恒为 false，以及总线、状态表、LVF/模板、负转换时间等格式反例。持续集成重复执行。
 
 ## D：共享标量引脚与新增不变量
 
-shared-pins.lib 使用 pin(A,B)、pin(Y,Z)。inspect 得到 4 个直接标量引脚；lint 零错误；查询 AND2_DUAL/Z、关联 B 的 cell_rise 得到 3e-11 秒。标准脚本还验证缺少 next_state 的 ff 被拒绝。额外脚本 audit-invariants.py 固定种子 20261026，用 100 位 Decimal 核对 52 次插值，并测试引号信号差异、提取、局部 type 和缺失状态方程，共 61 次 CLI 调用。所有合成数据均为原创测试，不冒充 PDK。
+shared-pins.lib 使用 pin(A,B)、pin(Y,Z)。inspect 得到 4 个直接标量引脚；lint 零错误；查询 AND2_DUAL/Z、关联 B 的 cell_rise 得到 3e-11 秒。标准脚本还验证缺少 next_state 的 ff 被拒绝。额外脚本 audit-invariants.py 固定种子 20261026，用 100 位 Decimal 核对 55 次插值/外推，并测试引号信号差异、提取、局部 type 和缺失状态方程，共 66 次 CLI 调用。所有合成数据均为原创测试，不冒充 PDK。
 
 ## E：本轮稳定性反例
 
 标准脚本新增缺轴具名表、latch 单边 data_in、clear/preset 缺少组合状态值的拒绝，以及合法 SR 锁存器接受。CLI 验收脚本额外拒绝 1.00000000000000001 等不能作为整数字面量的预算值。版本 0.4.1 的数值计算范围、命令数量和公开 API 均保持原范围。
+
+## F：输入编码与状态节点兼容
+
+0.4.2 的 CLI 验收共 27 次，新增 LF/CRLF 紧邻续行、注释内 NUL 拒绝且不产生输出、BOM 文件读取/规范化/差异归零。不变量脚本额外核对 statetable 内部节点在 compat 与 lint 中一致接受；高精度数值样本包含中间乘法溢出但最终结果有限的外推。它们均沿用既有命令，未增加物理求值模型。

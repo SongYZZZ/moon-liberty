@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.2 — 2026-10-28
+
+Conservative parser and correctness patch. Accept one initial UTF-8 BOM in a
+library or explicit include fragment without stripping embedded text or bypassing
+resource limits; emit ordinary UTF-8. Handle continuation immediately after bare
+values, reject NUL consistently in comments, resolve statetable internal nodes
+within their cell, and avoid false overflow during representable extrapolation.
+Public APIs, nine commands and physical evaluation scope remain unchanged.
+Add eleven targeted regressions and expand CLI/Decimal cross-checks. Full Liberty
+2017.06 conformance remains incomplete.
+
 ## 0.4.1 — 2026-10-26
 
 Conservative validation fixes; public APIs, commands and evaluation scope are

@@ -4,7 +4,7 @@
 
 [GitHub 仓库](https://github.com/SongYZZZ/moon-liberty) · [正式项目申报书](PROJECT_APPLICATION.md) · [范围与限制](docs/SUPPORT.md) · [验证记录](docs/TESTING.md) · [生态检索](docs/ECOSYSTEM_REVIEW.md)
 
-**标准基线固定为 Synopsys Liberty 2017.06。**最终目标是该版本完整格式读写与格式层规则闭环；当前 0.4.1 仍为部分实现，完整符合性明确标为 false。[标准兼容契约](docs/STANDARD_CONFORMANCE.md)说明终点、缺口及与受限求值的关系，[复审说明](docs/RESUBMISSION_RESPONSE.md)说明本轮改动。
+**标准基线固定为 Synopsys Liberty 2017.06。**最终目标是该版本完整格式读写与格式层规则闭环；当前 0.4.2 仍为部分实现，完整符合性明确标为 false。[标准兼容契约](docs/STANDARD_CONFORMANCE.md)说明终点、缺口及与受限求值的关系，[复审说明](docs/RESUBMISSION_RESPONSE.md)说明本轮改动。
 
 原创 MoonBit 基础库与原生命令行，面向 PDK 维护者、EDA 工具作者和数字电路教学。将文本库转成可检查的结构，按明确的物理单位查询延迟，并在库升级时指出具体字段、逻辑函数或时序表变化。实现使用 Apache-2.0；作者为宋永振（SongYZZZ）。
 
@@ -48,7 +48,7 @@ moon run cmd/moon-liberty -- truth "!(A & B)" --json
 
 ## 用作 MoonBit 库
 
-项目名为 SongYZZZ/moon-liberty；0.4.1 已发布至 Mooncakes，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
+项目名为 SongYZZZ/moon-liberty；0.4.2 已发布至 Mooncakes，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
 
 ```moonbit
 import {
@@ -84,7 +84,7 @@ import {
 
 ## 验证与独立核对
 
-原生 **337 项测试**通过；纯核心 **312 项测试**分别在 JS、Wasm GC 通过。另有 20 次原 CLI、29 次标准 CLI 检查，新增不变量流程 61 次 CLI 调用（含 52 次高精度 Decimal 对照）；新增语料流程有 89 次 CLI 调用，其中 72 次为 Nangate 四个单元上的独立数值核对。使用独立 Python Liberty 解析器对真实库核对结构清单、完整往返、单元提取，并核对 **IHP 12 个单元上的 312 次时序数值查询**，另加 Nangate 72 次，共 384 次。独立工具仅作为可选测试过程，未复制进 MoonBit 实现或运行时依赖。
+原生 **348 项测试**通过；纯核心 **323 项测试**分别在 JS、Wasm GC 通过。另有 27 次原 CLI、29 次标准 CLI 检查，不变量流程 66 次 CLI 调用（含 55 次高精度 Decimal 对照）；新增语料流程有 89 次 CLI 调用，其中 72 次为 Nangate 四个单元上的独立数值核对。使用独立 Python Liberty 解析器对真实库核对结构清单、完整往返、单元提取，并核对 **IHP 12 个单元上的 312 次时序数值查询**，另加 Nangate 72 次，共 384 次。独立工具仅作为可选测试过程，未复制进 MoonBit 实现或运行时依赖。
 
 ```powershell
 moon test --target js -p SongYZZZ/moon-liberty --deny-warn
@@ -112,3 +112,5 @@ moon bench --target native -p SongYZZZ/moon-liberty/benchmarks
 0.4.0 新增：单元局部 type 的作用域与遮蔽、ff 必需方程、公开数值对象复验、SI 前缀大小写、极值插值与逻辑引号身份修复。新增 Decimal 合成数据对照与 384 次真实库查询分别统计，不相加冒充真实样本数量。全部未完成标准项仍列在标准契约中。
 
 0.4.1 为保守修复版：统一表格形状校验、拒绝缺轴具名表的标量退化，严格解析 CLI 整数选项，并补齐 latch 的字段配对/状态值检查。SR 锁存器仍可省略 data_in/enable；公开 API 签名与 0.4.0 一致。
+
+0.4.2：补齐文件及 include 片段开头 UTF-8 BOM 的输入兼容，写出统一不带 BOM；修复紧邻裸值的续行、注释中 NUL 漏检、statetable 内部节点引用误报和有限外推的中间溢出。接口与求值范围保持一致。

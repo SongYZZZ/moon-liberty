@@ -1,6 +1,6 @@
 # 针对 Liberty 标准范围意见的补充说明
 
-2026-10-26，项目与唯一正式申报书均为 MoonLiberty，仓库 https://github.com/SongYZZZ/moon-liberty ，本轮版本 0.4.1。正式上传附件为根 PROJECT_APPLICATION.md。
+2026-10-28，项目与唯一正式申报书均为 MoonLiberty，仓库 https://github.com/SongYZZZ/moon-liberty ，本轮版本 0.4.2。正式上传附件为根 PROJECT_APPLICATION.md。
 
 ## 固定版本和最终目标
 
@@ -10,7 +10,7 @@
 
 - 沿用 18 个有章节、测试与限制说明的规则族及 30 种 LVF 矩表结构检查；本轮补齐单元局部 type 作用域和 ff 必需方程，支持多名称标量引脚并限制展开工作量。
 - 修复布尔优先级、超大整数/小数差异漏报、未引号总线范围、缺分号吞并属性、模板错配、负转换时间及写出资源预算等实际缺陷。
-- 337 项原生测试、JS/Wasm GC 各 312 项；原 CLI 20 次、标准 CLI 29 次，已有不变量流程 61 次含 52 次 Decimal 合成对照。IHP/Nangate 共 384 次独立数值核对，另有 Yosys 结构往返和未修改的 ASAP7 拒绝负例。全部来源和许可证单独列明。
+- 348 项原生测试、JS/Wasm GC 各 323 项；原 CLI 27 次、标准 CLI 29 次，已有不变量流程 66 次含 55 次 Decimal 合成对照。IHP/Nangate 共 384 次独立数值核对，另有 Yosys 结构往返和未修改的 ASAP7 拒绝负例。全部来源和许可证单独列明。
 - 申报书、README、模块、Git origin 使用相同项目名与仓库；开发记录保留实质提交，没有空提交凑数。
 
 ## 当前真实完成程度
@@ -20,3 +20,5 @@
 详细证据见 STANDARD_CONFORMANCE.md、FINAL_REVIEW.md、TESTING.md、CORPUS.md；不把本地自查或 CI 通过称为组委会初审/终审通过。
 
 0.4.1 补丁仅收紧已实现路径：缺轴表拒绝、整数参数严格解析及 latch 配对检查；无新公共 API 或计算范围扩张。完整标准符合性仍为 false。
+
+0.4.2 在保守复查中修复四处已复现的边界缺陷，并新增根文件/include 片段开头 UTF-8 BOM 的编码兼容。新增 11 项回归；标准规则族、公开接口和九个命令保持一致。

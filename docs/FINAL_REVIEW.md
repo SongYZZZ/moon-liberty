@@ -1,38 +1,33 @@
-# MoonLiberty 0.4.1 保守复查（2026-10-26）
+# MoonLiberty 0.4.2 保守复查（2026-10-28）
 
-## 结论与范围
+## 总体判断
 
-按本轮“优先完整性、减少新功能和新错误”的要求，检查了已有读取、建模、查询、差异、参数、写出、标准检查和测试路径。补丁集中修复已复现的边界问题，并补少量手册明确的 latch 格式规则。公开命令仍为九个，六份生成接口与 0.4.0 一致，求值范围保持不变。完整 2017.06 兼容仍未完成，不能判定官方终审通过。
+优先复核现有项目完整性、错误处理和材料一致性，修补四处实际复现的缺陷，并按追加要求增加一项小范围输入兼容。九个命令、六份公开接口和物理求值范围保持一致，未增加依赖。完整 Liberty 2017.06 标准兼容仍未完成，不能据此判定官方终审通过。上一轮记录见 [0.4.1 报告](history/FINAL_REVIEW_0_4_1.md)。
 
-## 发现与修复
+## 已复现并修复
 
-1. **缺轴表错误返回常数。**原版对 lu_table_template(T){} 或 index_1() 可在 SI query 中返回标量值，绕过预期坐标检查。现在 read_table 复用 read_table_data 的格式校验；具名表必须有非空轴，声明的变量须解析到对应轴，错误返回 TableShape/InvalidLibrary。保持合法 scalar 和局部覆盖行为。
-2. **整数选项接受舍入后的伪整数。**1.00000000000000001 经 Double 舍入被接受。现在先检查十进制整数字面量（可选前导 +），再检查范围；拒绝小数与指数写法。帮助中缺失 expand 的输出参数提示一并修正。
-3. **latch 字段依赖缺失。**按 Reference 2-86—2-89，补 data_in/enable 配对、enable_also 依赖、clear/preset 与组合状态值相互依赖，及 L/H/N/T/X 枚举。合法 SR 锁存器仍可不带 data_in/enable，不作一概必填处理。向量/状态仿真仍不求值。
+1. 裸值紧邻反斜杠续行时，旧版把反斜杠读进 area 值并报 InvalidNumber。现在 LF/CRLF 都由既有续行流程处理；孤立 CR 仍拒绝，行列位置保留。依据 UG1 1-3 的 Statements 规则。
+2. 行/块注释可绕过 NUL 拒绝。现在扫描前统一拒绝，返回 InvalidCharacter 和实际位置；文件命令失败后没有输出文件。
+3. statetable 内部节点在 compat 已能识别，lint 却报 UnknownSignal。现在补入同一 cell 的函数和 when 引用环境；未知名称和跨 cell 引用仍报错，内部节点不会变成 related_pin。依据 UG1 5-26、Reference 2-118；没有实现状态仿真。
+4. values(-1e308,0)、轴 [0,1]、外推坐标 2 的真实结果为有限 1e308，旧实现中间乘法先溢出而拒绝。现在只在该异常算术分支缩放计算；不可表示结果仍报 NumericRange，正反方向和二维路径都有回归。
 
-主实现较 0.4.0 净减少 42 行，新增 8 项有针对性的回归；没有新增公共 API、命令、依赖或计算模型。原始缺陷已先用 release CLI 复现，再修复验证。
+## 有限兼容增量
 
-## 已验证证据
+根文件及显式 include 片段允许开头有一个 U+FEFF（UTF-8 编码签名）。旧版 BOM 文件报 InvalidRoot，本版可检查、规范化及比较。BOM 计入输入预算和原始 offset，跳过时不占可见列；中途或重复的 U+FEFF 不当作空白删除，引号内容保留；写出为普通 UTF-8。这是输入编码适配，不列为新增标准条目，参见 [Unicode BOM 说明](https://www.unicode.org/faq/utf_bom.html)。
 
-- SDK/core 0.10.14+7d59c7ec9；fmt/check --deny-warn、info 和 release 构建。
-- 337 native、核心 JS/Wasm GC 各 312；不按三个后端重复累计不同测试数。
-- 原 CLI 20 次、标准 CLI 29 次、不变量 61 次；后者含 52 次 Decimal 合成数值对照。
-- IHP 312 次、Nangate 72 次实库核对及结构往返/提取；Yosys 固定样本往返；ASAP7 原始缺分号负例保留。
-- 六份生成接口与补丁前逐字比较相同；机器记录在 artifacts/api-041.json。
-- 唯一正式申报书 PROJECT_APPLICATION.md、README、moon.mod 与 Git origin 的项目身份一致。全部历史、源码、环境原位保留。
+## 验证与材料
 
-相关实现与回归：table.mbt、table_data.mbt、query_test.mbt、table_data_test.mbt、cli/arguments.mbt 及测试、standard_rules.mbt 及测试、scripts/verify.py、scripts/check-standard.py。原全量工程检查记录保留在 [0.4.0 报告](history/FINAL_REVIEW_0_4.md)。
+- SDK/core 0.10.14+7d59c7ec9；fmt/check --deny-warn、info、release 构建与两个实际例子通过。上游 async 在 Windows C 编译中仍可能出现 EINVAL 宏重定义警告，未修改依赖或掩盖此提示。
+- 348 native；核心 JS/Wasm GC 各 323。新增 11 项回归，其中八项缺陷回归先在旧实现上失败；不按后端重复累计为不同测试。
+- CLI 27 次、标准 CLI 29 次、不变量流程 66 次；后者含 55 次 Decimal 合成对照。IHP 312 次、Nangate 72 次真实库数值核对，以及结构往返/提取通过。ASAP7 原始缺分号输入继续作为拒绝负例。
+- 六份生成接口与 0.4.1 的 SHA-256 相同。原始复现和修复后 CLI 结果、本轮机器记录在本地 artifacts/audit-042.json；临时样本位于 D:/Dev/Temp/moon-liberty-audit-20261028。
+- 正式材料仍仅根 PROJECT_APPLICATION.md，名称、仓库、版本、测试数据与实际项目一致；修正文档中旧的 25 次检查、反例类别数与 compat 退出码遗漏。当前相对链接检查通过。
+- 官方十月公开源码重新读取：最多三人、十月最多提交三次，截止 2026-10-31。飞书完整章程仍不可访问，未宣称已逐条核对该内容，见 [赛事材料核对](CONTEST_REQUIREMENTS.md)。
 
-## 未完成项与保守选择
+已使用安装的 osc2026-guide 工程审查项，同时独立复核源代码、[2017.06 原厂手册镜像](https://manuals.plus/m/c06ac2f60609fe732b62ee745595b383be0db873dfee9ab41fc17d3e027c4de1.pdf)、真实库及数值结果。没有把技能的 OSC/八月规则当作十月章程。
 
-未在这次补丁中扩张 CCS/LVF 计算、完整向量展开或 phys_library，也没有将全手册字段级 schema 宣称完成。完整标准目标及具体开放项继续见 STANDARD_CONFORMANCE.md 和 standards/liberty-2017.06.json。减少已知错误不等于证明不存在其他错误，也不能以测试数代替完整标准验收。
+## 保留的实质缺口
 
-本轮执行已安装赛事技能的工程检查项，并独立核对 [Synopsys 2017.06 手册](https://manuals.plus/m/c06ac2f60609fe732b62ee745595b383be0db873dfee9ab41fc17d3e027c4de1.pdf)与实际 CLI。技能中 OSC/八月章程不被当作十月章程。仅更新代码和仓库材料，不发送邮件、群消息或代填报名表。
+全手册字段级 schema、完整引用/父组/词法规则、特殊根结构、完整 CCS/ECSM/LVF/噪声等格式规则尚须闭环；最终完整目标与 false 标记继续见 [标准契约](STANDARD_CONFORMANCE.md)。本轮未扩张三维、波形、统计或向量求值。测试和 CI 通过不是完整标准认证，也不保证官方审核结果。
 
-## 发布与远程证据
-
-发布源码基准 41a4bd5c7c4f6e43d12892695a4c72a113e7e037 的[完整远程 CI](https://github.com/SongYZZZ/moon-liberty/actions/runs/40336131351)已通过。0.4.1 已发布，服务器返回 200 OK；归档 SHA-256：c4023740609bb12c30ae7c3d8e66da9fc7ca7c7bbc606460bfbfaba532daffd8。
-
-独立注册表消费者通过 native 运行、JS/Wasm GC 检查，49 个 .mbt 及根清单逐字节匹配，确认缺轴拒绝和 SR 例外实际存在于公开包，见 CONSUMER.md。原始三项 CLI 缺陷也已复跑：缺轴/空轴 query 返回 2 且诊断 TableShape，伪整数参数返回 2 且诊断 Usage。
-
-两次实际修复提交后以发布和验证记录提交收尾，Git 历史原位保留，没有空提交或强制推送。后续证据文档提交的状态在 Actions 单独核验，不以旧版 CI 冒充新代码通过。
+发布包、独立消费者及远程 CI 的最终记录见 [消费者验证](CONSUMER.md)；只在实际完成后补记对应版本证据。不发送邮件、群消息或代填报名表。

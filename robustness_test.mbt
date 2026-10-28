@@ -142,3 +142,28 @@ test "malformed three dimensional table is an error rather than an unsupported w
     }),
   )
 }
+
+///|
+test "finite slope extrapolation avoids intermediate product overflow" {
+  for
+    sample in [
+      (-1.0e308, 0.0, 2.0, 1.0e308),
+      (1.0e308, 0.0, 2.0, -1.0e308),
+      (1.0e308, 1.5e308, -4.0, -1.0e308),
+      (-1.0e308, -1.5e308, -4.0, 1.0e308),
+      (-1.5e308, -1.4e308, 20.0, 5.0e307),
+    ] {
+    let t = table([0.0, 1.0], [], [sample.0, sample.1])
+    let answer = @liberty.lookup_table(t, sample.2, policy=@liberty.Extrapolate)
+    assert_true(answer.value.is_close(sample.3, relative_tolerance=1.0e-13))
+    assert_true(answer.extrapolated)
+  }
+}
+
+///|
+test "bilinear lookup shares overflow safe extrapolation" {
+  let t = table([0.0, 1.0], [0.0, 1.0], [-1.0e308, -1.0e308, 0.0, 0.0])
+  let answer = @liberty.lookup_table(t, 2.0, y=0.5, policy=@liberty.Extrapolate)
+  assert_true(answer.value.is_close(1.0e308, relative_tolerance=1.0e-14))
+  assert_true(answer.extrapolated)
+}

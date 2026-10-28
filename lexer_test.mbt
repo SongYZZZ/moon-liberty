@@ -160,3 +160,53 @@ test "scientific signed and bus tokens survive lexing" {
     "-1.5e-3", "A[0]", "1ns", "",
   ])
 }
+
+///|
+test "continuation directly after a bare value is a separator" {
+  for newline in ["\n", "\r\n"] {
+    let tokens = @liberty.tokenize("1\\" + newline + ";")
+    assert_eq(tokens.map(t => t.text), ["1", ";", ""])
+    assert_eq(tokens[1].position.line, 2)
+    assert_eq(tokens[1].position.column, 1)
+  }
+}
+
+///|
+test "adjacent continuation still requires LF after CR" {
+  assert_eq(lex_error("1\\\r;"), "InvalidContinuation")
+  assert_eq(@liberty.tokenize("vendor\\name")[0].text, "vendor\\name")
+}
+
+///|
+test "NUL in either comment form reports its actual location" {
+  for sample in [("a//\u0000\n", 3, 1, 4), ("a/*\n\u0000*/", 4, 2, 1)] {
+    try @liberty.tokenize(sample.0) catch {
+      @liberty.LibertyError(code, _, pos) => {
+        assert_eq(code, "InvalidCharacter")
+        assert_eq(pos.offset, sample.1)
+        assert_eq(pos.line, sample.2)
+        assert_eq(pos.column, sample.3)
+      }
+    } noraise {
+      _ => fail("comment concealed NUL")
+    }
+  }
+}
+
+///|
+test "only one leading BOM is an encoding signature and still consumes budget" {
+  let tokens = @liberty.tokenize("\uFEFFcell(C){}")
+  assert_eq(tokens[0].text, "cell")
+  assert_eq(tokens[0].position.offset, 1)
+  assert_eq(tokens[0].position.column, 1)
+  assert_eq(@liberty.tokenize("\uFEFF\uFEFFcell")[0].text, "\uFEFFcell")
+  assert_eq(@liberty.tokenize(" \uFEFFcell")[0].text, "\uFEFFcell")
+  assert_eq(@liberty.tokenize("\"a\uFEFFb\"")[0].text, "a\uFEFFb")
+  assert_eq(
+    lex_error("\uFEFFx", limits={
+      ..@liberty.Limits::default(),
+      max_input_chars: 1,
+    }),
+    "InputLimit",
+  )
+}

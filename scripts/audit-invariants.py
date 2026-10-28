@@ -56,6 +56,11 @@ def main():
         incomplete = fixture("incomplete.lib", 'cell(C){ff(Q,QN){clocked_on:"1";}}')
         assert "StandardStateRequired" in {f["code"] for f in run("compat", incomplete, "--standard", "2017.06", "--json", code=1)["findings"]}
 
+        states = fixture("state-names.lib", 'time_unit:"1ns";capacitive_load_unit(1,pf);cell(C){pin(A){direction:input;}'
+                         'statetable("A","IQ"){table:"L:-:L,H:-:H";}pin(Y){direction:output;function:"IQ";}}')
+        assert run("compat", states, "--standard", "2017.06", "--json")["implemented_checks_passed"]
+        assert run("lint", states, "--json")["errors"] == 0
+
         # Scope resolution should not copy every global type into every cell.
         scoped = fixture("scopes.lib", "".join(f"type(T{i}){{bit_width:1;}}" for i in range(2048)) +
                          "".join(f"cell(C{i}){{type(W){{bit_width:1;}}bus(D){{bus_type:W;pin(D[0]){{}}}}}}" for i in range(2048)))
@@ -65,7 +70,9 @@ def main():
 
         rng = random.Random(20261026)
         samples = [(-1e308, 1e308, 0.0), (-1e308, 1e308, 0.5),
-                   (-1e308, 1e308, 1.0), (-1e308, 9e307, 1.01)]
+                   (-1e308, 1e308, 1.0), (-1e308, 9e307, 1.01),
+                   (-1e308, 0.0, 2.0), (1e308, 0.0, 2.0),
+                   (-1.5e308, -1.4e308, 20.0)]
         for _ in range(48):
             exponent = rng.randint(-280, 300)
             samples.append((rng.uniform(-1, 1) * 10.0 ** exponent,
@@ -88,6 +95,7 @@ def main():
     report = dict(seed=20261026, cli_checks=calls, decimal_oracle_queries=numeric_checks,
                   quoted_pin_identity=True, shared_pin_extraction=True,
                   local_type_scope=True, incomplete_state_rejected=True,
+                  statetable_internal_references=True,
                   scoped_workload=dict(library_types=2048, cells=2048, wall_ms_including_process_and_io=scoped_wall_ms),
                   complete_standard_conformance=False)
     (artifacts / "invariant-audit.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

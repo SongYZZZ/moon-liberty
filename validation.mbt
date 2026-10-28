@@ -176,6 +176,14 @@ pub fn lint_library(library : Library) -> Array[Finding] {
         }
       }
     }
+    // State-table internal nodes are local Boolean names, not physical pins.
+    for state in cell.source.groups("statetable") {
+      if declaration_argument(state.arguments, 1) is Some(states) {
+        for name in words(states) {
+          logic_names[name] = true
+        }
+      }
+    }
     for pin in cell.pins {
       let pin_path = path + "/pin:" + pin.name
       duplicate_properties(pin.source, pin_path, findings)

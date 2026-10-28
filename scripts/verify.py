@@ -49,7 +49,7 @@ def main():
     assert [r["output"] for r in rows] == [True, True, True, False]
     assert run("truth", "A", "--max-inputs", "1.00000000000000001", code=2, parse=False).stderr
     assert run("diff", basic, basic, "--max-changes", "2.00000000000000001", code=2, parse=False).stderr
-    assert run("--version", parse=False).stdout.strip() == "moon-liberty 0.4.1"
+    assert run("--version", parse=False).stdout.strip() == "moon-liberty 0.4.2"
     artifacts = ROOT / "artifacts"
     artifacts.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="cli-", dir=artifacts) as tmp:
@@ -72,6 +72,24 @@ def main():
         invalid_utf8 = target / "utf8.lib"
         invalid_utf8.write_bytes(b"\xff\xfe")
         assert run("inspect", invalid_utf8, code=2, parse=False).stderr
+        # Illegal characters cannot hide in comments or publish partial output.
+        for label, comment in (("block", "/*\x00*/"), ("line", "//\x00\n")):
+            source = target / f"nul-{label}.lib"
+            source.write_text("library(x){" + comment + "}", encoding="utf-8")
+            absent = target / f"nul-{label}-output.lib"
+            failed = run("normalize", source, "-o", absent, code=2, parse=False)
+            assert "InvalidCharacter" in failed.stderr and not absent.exists()
+        for index, newline in enumerate(("\n", "\r\n")):
+            source = target / f"continued-{index}.lib"
+            source.write_bytes(("library(x){cell(C){area:1\\" + newline + ";}}").encode())
+            assert run("lint", source, "--json")["errors"] == 0
+        signed = target / "bom.lib"
+        signed.write_bytes(b"\xef\xbb\xbf" + basic.read_bytes())
+        assert run("lint", signed, "--json")["errors"] == 0
+        unsigned = target / "bom-normalized.lib"
+        run("normalize", signed, "-o", unsigned, "--json")
+        assert not unsigned.read_bytes().startswith(b"\xef\xbb\xbf")
+        assert run("diff", basic, unsigned, "--json")["total_changes"] == 0
         # A malformed integer cannot silently turn into a truncated limit.
         assert run("truth", "A", "--max-inputs", "1.5", code=2, parse=False).stderr
 

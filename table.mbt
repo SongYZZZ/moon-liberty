@@ -187,7 +187,13 @@ fn interpolate(a : Double, b : Double, fraction : Double) -> Double {
   }
   let difference = b - a
   if !difference.is_inf() {
-    return a + difference * fraction
+    let delta = difference * fraction
+    if delta.is_inf() {
+      // A finite endpoint can cancel an overflowing product. Scale only this
+      // exceptional path; the final finite-result check still rejects overflow.
+      return (a / 2.0 + difference * (fraction / 2.0)) * 2.0
+    }
+    return a + delta
   }
   // Opposite extreme endpoints can overflow the difference even when a small
   // extrapolation beyond one endpoint is representable.

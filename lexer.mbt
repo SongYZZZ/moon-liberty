@@ -38,7 +38,10 @@ fn Scanner::position(self : Scanner) -> Position {
 }
 
 ///|
-fn Scanner::advance(self : Scanner) -> Unit {
+fn Scanner::advance(self : Scanner) -> Unit raise LibertyError {
+  if self.text[self.index] == 0 {
+    raise failure("InvalidCharacter", "NUL is not permitted", self.position())
+  }
   if self.text[self.index] == 10 {
     self.line += 1
     self.column = 1
@@ -194,7 +197,10 @@ pub fn tokenize(
       no_position(),
     )
   }
-  let scanner : Scanner = { text, limits, index: 0, line: 1, column: 1, }
+  // A leading Unicode encoding signature is transport metadata, not syntax.
+  // It remains included in the input budget and original UTF-16 offsets.
+  let start = if !text.is_empty() && text[0] == 0xFEFF { 1 } else { 0 }
+  let scanner : Scanner = { text, limits, index: start, line: 1, column: 1, }
   let tokens = []
   while true {
     scanner.skip()
@@ -229,6 +235,8 @@ pub fn tokenize(
         if whitespace(current) ||
           (symbol(current) && !(current == 58 && brackets > 0)) ||
           current == 34 ||
+          scanner.has(92, 10) ||
+          scanner.has(92, 13) ||
           scanner.has(47, 47) ||
           scanner.has(47, 42) {
           break

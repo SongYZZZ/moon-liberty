@@ -333,3 +333,27 @@ test "caller constructed large values are bounded before rendering" {
     _ => fail("caller AST escaped output budget")
   }
 }
+
+///|
+test "numeric attributes continued without preceding whitespace roundtrip" {
+  for newline in ["\n", "\r\n"] {
+    let root = @liberty.parse_liberty(
+      "library(x){cell(C){area:1\\" + newline + ";}}",
+    )
+    assert_eq(root.groups("cell")[0].text("area"), Some("1"))
+    let rendered = @liberty.write_liberty(root)
+    assert_eq(
+      @liberty.parse_liberty(rendered).groups("cell")[0].text("area"),
+      Some("1"),
+    )
+  }
+}
+
+///|
+test "leading BOM loads normally and deterministic output omits the signature" {
+  let library = @liberty.load_library("\uFEFFlibrary(x){cell(C){area:1;}}")
+  assert_eq(library.cells[0].area, Some(1.0))
+  let rendered = @liberty.write_liberty(library.source)
+  assert_true(rendered.has_prefix("library"))
+  assert_eq(@liberty.load_library(rendered).cells[0].area, Some(1.0))
+}

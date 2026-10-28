@@ -189,3 +189,19 @@ test "fragment parser supports simple complex and group statements" {
     3,
   )
 }
+
+///|
+test "root and supplied include fragments each accept a leading BOM" {
+  let text = "\uFEFFlibrary(x){include_file(c.inc);}"
+  let body = "\uFEFFcell(C){area:1;vendor:\"a\uFEFFb\";}"
+  let root = expanded(text, "c.inc", body)
+  assert_eq(root.groups("cell")[0].text("vendor"), Some("a\uFEFFb"))
+  assert_eq(root.groups("cell")[0].text("area"), Some("1"))
+  assert_eq(
+    include_error(text, Map([("c.inc", body)]), limits={
+      ..@liberty.Limits::default(),
+      max_input_chars: text.length() + body.length() - 1,
+    }),
+    "InputLimit",
+  )
+}

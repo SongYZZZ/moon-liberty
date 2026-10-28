@@ -179,3 +179,39 @@ test "diagnostics retain file positions and structural paths" {
   assert_eq(issue.position.line, 3)
   assert_eq(issue.path, "x/cell:A/area")
 }
+
+///|
+test "statetable internal names resolve in functions and timing conditions" {
+  let source = "library(x){time_unit:\"1ns\";capacitive_load_unit(1,pf);cell(C){" +
+    "pin(A){direction:input;}statetable(\"A\",\"IQ IQN\"){table:\"L:- -:L H,H:- -:H L\";}" +
+    "pin(Y){direction:output;function:\"IQ ^ IQN\";timing(){related_pin:\"A\";when:\"IQ\";}}}}"
+  let library = @liberty.load_library(source)
+  assert_eq(
+    @liberty.compatibility_report(library.source).findings.filter(f => {
+      f.severity is Error
+    }),
+    [],
+  )
+  assert_eq(@liberty.lint_library(library).filter(f => f.severity is Error), [])
+}
+
+///|
+test "statetable state names remain cell scoped and are not related pins" {
+  let source = "library(x){cell(C){pin(A){direction:input;}statetable(\"A\",\"IQ\"){table:\"L:-:L,H:-:H\";}" +
+    "pin(Y){direction:output;function:\"IQ | MISSING\";timing(){related_pin:\"IQ\";}}}" +
+    "cell(D){pin(Y){direction:output;function:\"IQ\";}}}"
+  let findings = @liberty.lint_library(@liberty.load_library(source))
+  let unknown = findings.filter(f => f.code == "UnknownSignal")
+  assert_eq(unknown.length(), 2)
+  assert_true(
+    unknown.any(f => {
+      f.path == "x/cell:C/pin:Y/function" && f.message.contains("MISSING")
+    }),
+  )
+  assert_true(
+    unknown.any(f => {
+      f.path == "x/cell:D/pin:Y/function" && f.message.contains("IQ")
+    }),
+  )
+  assert_true(findings.any(f => f.code == "UnknownRelatedPin"))
+}

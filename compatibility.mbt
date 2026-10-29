@@ -27,7 +27,7 @@ pub fn parse_standard(text : String) -> StandardEdition raise LibertyError {
 ///|
 pub(all) struct FormatFeature {
   family : String
-  occurrences : Int
+  occurrences : Int32
   evaluation : String
 } derive(Eq, Debug)
 
@@ -55,7 +55,10 @@ priv struct UserGroup {
 }
 
 ///|
-fn declaration_argument(arguments : Array[Array[Atom]], index : Int) -> String? {
+fn declaration_argument(
+  arguments : Array[Array[Atom]],
+  index : Int32,
+) -> String? {
   if index >= arguments.length() {
     return None
   }
@@ -200,7 +203,7 @@ fn inspect_format(
   path : String,
   attrs : Array[UserAttribute],
   groups : Array[UserGroup],
-  counts : Map[String, Int],
+  counts : Map[String, Int32],
   modes : Map[String, String],
   findings : Array[Finding],
 ) -> Unit {
@@ -294,7 +297,7 @@ fn inspect_format(
 /// complete_conformance remains false until the full edition checklist is closed.
 pub fn compatibility_report(
   root : Group,
-  standard? : StandardEdition = Liberty2017_06,
+  standard~ : StandardEdition = Liberty2017_06,
 ) -> CompatibilityReport raise LibertyError {
   ignore(write_liberty(root))
   let attrs = []
@@ -302,7 +305,7 @@ pub fn compatibility_report(
   let findings = []
   collect_declarations(root, attrs, groups, findings)
   findings.append(collect_standard_findings(root))
-  let counts : Map[String, Int] = Map([])
+  let counts : Map[String, Int32] = Map([])
   let modes : Map[String, String] = Map([])
   inspect_format(
     root,
@@ -336,26 +339,26 @@ pub fn compatibility_json(report : CompatibilityReport) -> Json {
   let errors = report.findings.filter(f => f.severity == Error).length()
   {
     "schema": "moonliberty.compatibility.v1",
-    "target_standard": report.standard.label().to_json(),
+    "target_standard": Json(report.standard.label()),
     "version_detection": "caller_declared",
-    "library": report.library.to_json(),
-    "implemented_checks_passed": (errors == 0).to_json(),
-    "complete_standard_conformance": report.complete_conformance.to_json(),
-    "roundtrip_verified": report.roundtrip_verified.to_json(),
-    "implemented_rule_ids": standard_rule_ids().to_json(),
+    "library": Json(report.library),
+    "implemented_checks_passed": Json(errors == 0),
+    "complete_standard_conformance": Json(report.complete_conformance),
+    "roundtrip_verified": Json(report.roundtrip_verified),
+    "implemented_rule_ids": Json(standard_rule_ids()),
     "rule_inventory_exhaustive": false,
-    "errors": errors.to_json(),
-    "warnings": (report.findings.length() - errors).to_json(),
-    "features": report.features
-    .map(feature => {
-      (
-        {
-          "family": feature.family.to_json(),
-          "occurrences": feature.occurrences.to_json(),
-          "evaluation": feature.evaluation.to_json(),
-        } : Json)
-    })
-    .to_json(),
+    "errors": Json(errors),
+    "warnings": Json(report.findings.length() - errors),
+    "features": Json(
+      report.features.map(feature => {
+        (
+          {
+            "family": Json(feature.family),
+            "occurrences": Json(feature.occurrences),
+            "evaluation": Json(feature.evaluation),
+          } : Json)
+      }),
+    ),
     "findings": findings_json(report.findings),
     "conformance_contract": "docs/STANDARD_CONFORMANCE.md",
   }

@@ -43,7 +43,7 @@ pub fn query_timing(
   slew_seconds : Double,
   load_farads : Double,
   condition? : String,
-  policy? : RangePolicy = Reject,
+  policy~ : RangePolicy = Reject,
 ) -> TimingQuery raise LibertyError {
   if library.source.text("delay_model") is Some(model) &&
     model != "table_lookup" {
@@ -209,16 +209,16 @@ pub fn query_timing(
 pub fn query_json(query : TimingQuery) -> Json {
   {
     "schema": "moonliberty.query.v1",
-    "cell": query.cell.to_json(),
-    "pin": query.pin.to_json(),
-    "related_pin": query.related_pin.to_json(),
-    "table": query.table_kind.to_json(),
+    "cell": Json(query.cell),
+    "pin": Json(query.pin),
+    "related_pin": Json(query.related_pin),
+    "table": Json(query.table_kind),
     "when": nullable_text(query.condition),
-    "slew_seconds": query.slew_seconds.to_json(),
-    "load_farads": query.load_farads.to_json(),
-    "seconds": query.seconds.to_json(),
-    "value_in_library_time_unit": query.raw_value.to_json(),
-    "clamped": query.clamped.to_json(),
-    "extrapolated": query.extrapolated.to_json(),
+    "slew_seconds": Json(query.slew_seconds),
+    "load_farads": Json(query.load_farads),
+    "seconds": Json(query.seconds),
+    "value_in_library_time_unit": Json(query.raw_value),
+    "clamped": Json(query.clamped),
+    "extrapolated": Json(query.extrapolated),
   }
 }

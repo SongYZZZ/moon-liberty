@@ -40,19 +40,19 @@ pub(all) struct Library {
 
 ///|
 pub(all) struct Inventory {
-  cells : Int
-  pins : Int
-  arcs : Int
-  tables : Int
-  errors : Int
-  warnings : Int
+  cells : Int32
+  pins : Int32
+  arcs : Int32
+  tables : Int32
+  errors : Int32
+  warnings : Int32
 } derive(Eq, Debug)
 
 ///|
 /// Bounds expansion of shared pin declarations and repeated validation work.
 pub(all) struct ModelLimits {
-  max_pins : Int
-  max_work : Int
+  max_pins : Int32
+  max_work : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -71,9 +71,9 @@ fn model_work(
   timings : Array[TimingArc],
   function : String?,
   source : Group,
-  limit : Int,
+  limit : Int32,
   pos : Position,
-) -> Int raise LibertyError {
+) -> Int32 raise LibertyError {
   let mut work = 1 +
     source.items.length() +
     function.map(s => s.length()).unwrap_or(0)
@@ -118,7 +118,7 @@ fn model_work(
 fn finding(
   error : LibertyError,
   path : String,
-  severity? : Severity = Error,
+  severity~ : Severity = Error,
 ) -> Finding {
   let LibertyError(code, message, position) = error
   { code, severity, path, message, position, }
@@ -181,7 +181,7 @@ fn timing_table_kind(kind : String) -> Bool {
 ///|
 pub fn build_library(
   root : Group,
-  model_limits? : ModelLimits = ModelLimits::default(),
+  model_limits~ : ModelLimits = ModelLimits::default(),
 ) -> Library raise LibertyError {
   if root.kind != "library" || root.name().is_empty() {
     raise failure(
@@ -336,8 +336,8 @@ pub fn build_library(
 ///|
 pub fn load_library(
   text : String,
-  limits? : Limits = Limits::default(),
-  model_limits? : ModelLimits = ModelLimits::default(),
+  limits~ : Limits = Limits::default(),
+  model_limits~ : ModelLimits = ModelLimits::default(),
 ) -> Library raise LibertyError {
   build_library(parse_liberty(text, limits~), model_limits~)
 }
@@ -379,7 +379,7 @@ pub fn Library::inventory(self : Library) -> Inventory {
 ///|
 fn nullable_number(value : Double?) -> Json {
   match value {
-    Some(number) => number.to_json()
+    Some(number) => Json(number)
     None => Json::null()
   }
 }
@@ -387,7 +387,7 @@ fn nullable_number(value : Double?) -> Json {
 ///|
 fn nullable_text(value : String?) -> Json {
   match value {
-    Some(text) => text.to_json()
+    Some(text) => Json(text)
     None => Json::null()
   }
 }
@@ -397,20 +397,20 @@ pub fn inventory_json(library : Library) -> Json {
   let inventory = library.inventory()
   {
     "schema": "moonliberty.inventory.v1",
-    "library": library.name.to_json(),
+    "library": Json(library.name),
     "delay_model": nullable_text(library.source.text("delay_model")),
-    "cells": inventory.cells.to_json(),
-    "pins": inventory.pins.to_json(),
-    "arcs": inventory.arcs.to_json(),
-    "tables": inventory.tables.to_json(),
-    "model_errors": inventory.errors.to_json(),
-    "model_warnings": inventory.warnings.to_json(),
+    "cells": Json(inventory.cells),
+    "pins": Json(inventory.pins),
+    "arcs": Json(inventory.arcs),
+    "tables": Json(inventory.tables),
+    "model_errors": Json(inventory.errors),
+    "model_warnings": Json(inventory.warnings),
     "time_unit_seconds": nullable_number(
       library.units.map(units => units.time_seconds),
     ),
     "capacitance_unit_farads": nullable_number(
       library.units.map(units => units.capacitance_farads),
     ),
-    "cell_names": library.cells.map(cell => cell.name).to_json(),
+    "cell_names": Json(library.cells.map(cell => cell.name)),
   }
 }

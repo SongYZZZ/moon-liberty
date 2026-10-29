@@ -79,8 +79,8 @@ pub fn Group::complex(self : Group, name : String) -> Array[Array[Atom]]? {
 priv struct Parser {
   tokens : Array[Token]
   limits : Limits
-  mut index : Int
-  mut nodes : Int
+  mut index : Int32
+  mut nodes : Int32
 }
 
 ///|
@@ -182,7 +182,7 @@ fn Parser::arguments(self : Parser) -> Array[Array[Atom]] raise LibertyError {
 }
 
 ///|
-fn Parser::node(self : Parser, depth : Int) -> Node raise LibertyError {
+fn Parser::node(self : Parser, depth : Int32) -> Node raise LibertyError {
   if depth > self.limits.max_depth {
     raise failure(
       "DepthLimit",
@@ -292,7 +292,7 @@ fn Parser::node(self : Parser, depth : Int) -> Node raise LibertyError {
 ///|
 pub fn parse_liberty(
   text : String,
-  limits? : Limits = Limits::default(),
+  limits~ : Limits = Limits::default(),
 ) -> Group raise LibertyError {
   let parser : Parser = {
     tokens: tokenize(text, limits~),

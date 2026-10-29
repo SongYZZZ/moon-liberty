@@ -2,7 +2,7 @@
 /// Parse an include_file body as complete statements, never as a text splice.
 pub fn parse_fragment(
   text : String,
-  limits? : Limits = Limits::default(),
+  limits~ : Limits = Limits::default(),
 ) -> Array[Node] raise LibertyError {
   let parser : Parser = {
     tokens: tokenize(text, limits~),
@@ -42,15 +42,15 @@ fn include_name(
 priv struct IncludeExpander {
   sources : Map[String, String]
   limits : Limits
-  mut input_chars : Int
-  mut nodes : Int
+  mut input_chars : Int32
+  mut nodes : Int32
 }
 
 ///|
 fn IncludeExpander::group(
   self : IncludeExpander,
   group : Group,
-  depth : Int,
+  depth : Int32,
   from_include : Bool,
 ) -> Group raise LibertyError {
   if depth > self.limits.max_depth {
@@ -125,7 +125,7 @@ fn IncludeExpander::group(
 pub fn parse_liberty_sources(
   text : String,
   sources : Map[String, String],
-  limits? : Limits = Limits::default(),
+  limits~ : Limits = Limits::default(),
 ) -> Group raise LibertyError {
   let root = parse_liberty(text, limits~)
   let state : IncludeExpander = {

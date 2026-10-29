@@ -1,12 +1,12 @@
 ///|
 fn query_error(
   library : @liberty.Library,
-  cell? : String = "INV",
-  pin? : String = "Y",
-  related? : String = "A",
-  kind? : String = "cell_rise",
-  slew? : Double = 2.0e-9,
-  load? : Double = 3.0e-12,
+  cell~ : String = "INV",
+  pin~ : String = "Y",
+  related~ : String = "A",
+  kind~ : String = "cell_rise",
+  slew~ : Double = 2.0e-9,
+  load~ : Double = 3.0e-12,
   condition? : String,
 ) -> String raise {
   try

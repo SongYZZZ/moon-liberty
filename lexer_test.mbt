@@ -1,7 +1,7 @@
 ///|
 fn lex_error(
   text : String,
-  limits? : @liberty.Limits = @liberty.Limits::default(),
+  limits~ : @liberty.Limits = @liberty.Limits::default(),
 ) -> String raise {
   try @liberty.tokenize(text, limits~) catch {
     @liberty.LibertyError(code, _, _) => code

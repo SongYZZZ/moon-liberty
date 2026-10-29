@@ -2,7 +2,7 @@
 fn compare_texts(
   a : String,
   b : String,
-  max_changes? : Int = 10000,
+  max_changes~ : Int32 = 10000,
 ) -> @liberty.Comparison raise {
   @liberty.compare_libraries(
     @liberty.load_library(a),

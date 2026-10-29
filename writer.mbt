@@ -29,20 +29,20 @@ fn render_atoms(atoms : Array[Atom]) -> String {
 priv struct SyntaxWriter {
   output : StringBuilder
   limits : Limits
-  mut nodes : Int
+  mut nodes : Int32
 }
 
 ///|
 priv struct WriterBudget {
   limits : Limits
-  mut chars : Int
-  mut nodes : Int
+  mut chars : Int32
+  mut nodes : Int32
 }
 
 ///|
 fn WriterBudget::add(
   self : WriterBudget,
-  count : Int,
+  count : Int32,
   pos : Position,
 ) -> Unit raise LibertyError {
   if count > self.limits.max_input_chars - self.chars {
@@ -92,7 +92,7 @@ fn WriterBudget::arguments(
 fn WriterBudget::group(
   self : WriterBudget,
   group : Group,
-  depth : Int,
+  depth : Int32,
 ) -> Unit raise LibertyError {
   if depth >= self.limits.max_depth {
     raise failure("DepthLimit", "writer nesting exceeds limit", group.position)
@@ -129,7 +129,7 @@ fn WriterBudget::group(
 }
 
 ///|
-fn SyntaxWriter::indent(self : SyntaxWriter, depth : Int) -> Unit {
+fn SyntaxWriter::indent(self : SyntaxWriter, depth : Int32) -> Unit {
   for i = 0; i < depth; i = i + 1 {
     self.output.write_string("  ")
   }
@@ -139,7 +139,7 @@ fn SyntaxWriter::indent(self : SyntaxWriter, depth : Int) -> Unit {
 fn SyntaxWriter::group(
   self : SyntaxWriter,
   group : Group,
-  depth : Int,
+  depth : Int32,
 ) -> Unit raise LibertyError {
   if depth >= self.limits.max_depth {
     raise failure("DepthLimit", "writer nesting exceeds limit", group.position)
@@ -182,7 +182,7 @@ fn SyntaxWriter::group(
 ///|
 pub fn write_liberty(
   group : Group,
-  limits? : Limits = Limits::default(),
+  limits~ : Limits = Limits::default(),
 ) -> String raise LibertyError {
   // Validate budgets before allocating the rendered text, including escaping
   // and indentation. Caller-constructed ASTs need not originate in the lexer.

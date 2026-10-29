@@ -16,7 +16,7 @@ pub(all) struct Change {
 
 ///|
 pub(all) struct Comparison {
-  total_changes : Int
+  total_changes : Int32
   changes : Array[Change]
   truncated : Bool
 } derive(Eq, Debug)
@@ -134,14 +134,14 @@ fn flatten_group(
   group : Group,
   path : String,
   entries : Map[String, String],
-  depth : Int,
+  depth : Int32,
 ) -> Unit raise LibertyError {
   if depth > 128 {
     raise failure("DiffLimit", "comparison depth exceeds 128", group.position)
   }
   // An explicit group marker keeps empty added/removed cells visible.
   put_entry(entries, path + "/@group", group.kind, group.position)
-  let occurrences : Map[String, Int] = Map([])
+  let occurrences : Map[String, Int32] = Map([])
   for item in group.items {
     let (key, value) = match item {
       Attribute(name, atoms, _) =>
@@ -194,7 +194,7 @@ fn preview(value : String) -> String {
 pub fn compare_libraries(
   left : Library,
   right : Library,
-  max_changes? : Int = 10000,
+  max_changes~ : Int32 = 10000,
 ) -> Comparison raise LibertyError {
   if max_changes < 1 || max_changes > 100000 {
     raise failure(
@@ -257,26 +257,28 @@ pub fn compare_libraries(
 pub fn comparison_json(comparison : Comparison) -> Json {
   {
     "schema": "moonliberty.diff.v1",
-    "has_changes": (comparison.total_changes != 0).to_json(),
-    "total_changes": comparison.total_changes.to_json(),
-    "truncated": comparison.truncated.to_json(),
+    "has_changes": Json(comparison.total_changes != 0),
+    "total_changes": Json(comparison.total_changes),
+    "truncated": Json(comparison.truncated),
     "scope": "group/attribute semantics, numeric and Boolean syntax normalization; not electrical equivalence or STA signoff",
-    "changes": comparison.changes
-    .map(change => {
-      (
-        {
-          "kind": (match change.kind {
-            Added => "added"
-            Removed => "removed"
-            Modified => "modified"
-          }).to_json(),
-          "path": change.path.to_json(),
-          "before": nullable_text(change.before),
-          "after": nullable_text(change.after),
-          "preview_truncated": change.preview_truncated.to_json(),
-        } : Json)
-    })
-    .to_json(),
+    "changes": Json(
+      comparison.changes.map(change => {
+        (
+          {
+            "kind": Json(
+              match change.kind {
+                Added => "added"
+                Removed => "removed"
+                Modified => "modified"
+              },
+            ),
+            "path": Json(change.path),
+            "before": nullable_text(change.before),
+            "after": nullable_text(change.after),
+            "preview_truncated": Json(change.preview_truncated),
+          } : Json)
+      }),
+    ),
   }
 }
 

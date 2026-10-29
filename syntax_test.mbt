@@ -1,7 +1,7 @@
 ///|
 fn parse_error(
   text : String,
-  limits? : @liberty.Limits = @liberty.Limits::default(),
+  limits~ : @liberty.Limits = @liberty.Limits::default(),
 ) -> String raise {
   try @liberty.parse_liberty(text, limits~) catch {
     @liberty.LibertyError(code, _, _) => code

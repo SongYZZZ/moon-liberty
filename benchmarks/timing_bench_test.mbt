@@ -1,5 +1,5 @@
 ///|
-fn generated_library(cells : Int) -> String {
+fn generated_library(cells : Int32) -> String {
   let out = StringBuilder()
   out.write_string(
     "library(benchmark){time_unit:\"1ns\";capacitive_load_unit(1,pf);",

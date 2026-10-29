@@ -22,8 +22,8 @@ pub(all) struct Lookup {
   value : Double
   clamped : Bool
   extrapolated : Bool
-  x_interval : Int
-  y_interval : Int?
+  x_interval : Int32
+  y_interval : Int32?
 } derive(Eq, Debug)
 
 ///|
@@ -112,8 +112,8 @@ pub fn read_table(group : Group, template? : Group) -> Table raise LibertyError 
 
 ///|
 priv struct Interval {
-  low : Int
-  high : Int
+  low : Int32
+  high : Int32
   fraction : Double
   outside : Bool
 }
@@ -210,7 +210,7 @@ pub fn lookup_table(
   table : Table,
   x : Double,
   y? : Double,
-  policy? : RangePolicy = Reject,
+  policy~ : RangePolicy = Reject,
 ) -> Lookup raise LibertyError {
   validate_table(table)
   if x.is_nan() || x.is_inf() || (y is Some(v) && (v.is_nan() || v.is_inf())) {

@@ -19,9 +19,9 @@ fn table(
 ///|
 fn table_error(
   t : @liberty.Table,
-  x? : Double = 0.0,
+  x~ : Double = 0.0,
   y? : Double,
-  policy? : @liberty.RangePolicy = Reject,
+  policy~ : @liberty.RangePolicy = Reject,
 ) -> String raise {
   try @liberty.lookup_table(t, x, y?, policy~) catch {
     @liberty.LibertyError(code, _, _) => code

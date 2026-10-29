@@ -27,9 +27,9 @@ fn symbol(code : UInt16) -> Bool {
 priv struct Scanner {
   text : String
   limits : Limits
-  mut index : Int
-  mut line : Int
-  mut column : Int
+  mut index : Int32
+  mut line : Int32
+  mut column : Int32
 }
 
 ///|
@@ -176,7 +176,7 @@ fn Scanner::quoted(self : Scanner) -> Token raise LibertyError {
 ///|
 pub fn tokenize(
   text : String,
-  limits? : Limits = Limits::default(),
+  limits~ : Limits = Limits::default(),
 ) -> Array[Token] raise LibertyError {
   if limits.max_input_chars < 1 ||
     limits.max_tokens < 1 ||

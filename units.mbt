@@ -15,7 +15,7 @@ pub(all) struct Units {
 ///|
 pub fn finite_number(
   text : String,
-  position? : Position = no_position(),
+  position~ : Position = no_position(),
 ) -> Double raise LibertyError {
   let clean = text.trim()
   if clean.is_empty() {
@@ -141,7 +141,7 @@ pub fn read_units(root : Group) -> Units raise LibertyError {
 ///|
 pub fn number_list(
   atoms : Array[Atom],
-  position? : Position = no_position(),
+  position~ : Position = no_position(),
 ) -> Array[Double] raise LibertyError {
   if atoms.length() != 1 {
     raise failure(

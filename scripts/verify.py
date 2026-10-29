@@ -49,7 +49,7 @@ def main():
     assert [r["output"] for r in rows] == [True, True, True, False]
     assert run("truth", "A", "--max-inputs", "1.00000000000000001", code=2, parse=False).stderr
     assert run("diff", basic, basic, "--max-changes", "2.00000000000000001", code=2, parse=False).stderr
-    assert run("--version", parse=False).stdout.strip() == "moon-liberty 0.4.2"
+    assert run("--version", parse=False).stdout.strip() == "moon-liberty 0.4.3"
     artifacts = ROOT / "artifacts"
     artifacts.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="cli-", dir=artifacts) as tmp:

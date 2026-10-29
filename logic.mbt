@@ -17,8 +17,8 @@ pub(all) struct TruthRow {
 ///|
 priv struct LogicParser {
   text : String
-  mut index : Int
-  mut nodes : Int
+  mut index : Int32
+  mut nodes : Int32
 }
 
 ///|
@@ -67,7 +67,7 @@ fn logic_identifier(code : UInt16) -> Bool {
 ///|
 fn LogicParser::unary(
   self : LogicParser,
-  depth : Int,
+  depth : Int32,
 ) -> Logic raise LibertyError {
   if depth > 128 {
     raise failure(
@@ -157,7 +157,7 @@ fn LogicParser::unary(
 ///|
 fn LogicParser::conjunction(
   self : LogicParser,
-  depth : Int,
+  depth : Int32,
 ) -> Logic raise LibertyError {
   let mut value = self.exclusive(depth)
   while true {
@@ -187,7 +187,7 @@ fn LogicParser::conjunction(
 ///|
 fn LogicParser::exclusive(
   self : LogicParser,
-  depth : Int,
+  depth : Int32,
 ) -> Logic raise LibertyError {
   let mut value = self.unary(depth)
   while self.peek() == Some(94) {
@@ -201,7 +201,7 @@ fn LogicParser::exclusive(
 ///|
 fn LogicParser::disjunction(
   self : LogicParser,
-  depth : Int,
+  depth : Int32,
 ) -> Logic raise LibertyError {
   let mut value = self.conjunction(depth)
   while self.peek() == Some(124) || self.peek() == Some(43) {
@@ -307,7 +307,7 @@ pub fn evaluate_logic(
 ///|
 pub fn truth_table(
   expression : Logic,
-  max_inputs? : Int = 12,
+  max_inputs~ : Int32 = 12,
 ) -> Array[TruthRow] raise LibertyError {
   let names = logic_signals(expression)
   if max_inputs < 0 || max_inputs > 16 || names.length() > max_inputs {
@@ -384,7 +384,7 @@ pub fn format_logic(expression : Logic) -> String raise LibertyError {
 
 ///|
 /// Explicit code-unit lexical order; core String comparison is length-first.
-fn lexical_compare(a : String, b : String) -> Int {
+fn lexical_compare(a : String, b : String) -> Int32 {
   let length = if a.length() < b.length() { a.length() } else { b.length() }
   for i = 0; i < length; i = i + 1 {
     if a[i] != b[i] {

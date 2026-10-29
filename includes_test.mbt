@@ -11,7 +11,7 @@ fn expanded(
 fn include_error(
   text : String,
   sources : Map[String, String],
-  limits? : @liberty.Limits = @liberty.Limits::default(),
+  limits~ : @liberty.Limits = @liberty.Limits::default(),
 ) -> String raise {
   try @liberty.parse_liberty_sources(text, sources, limits~) catch {
     @liberty.LibertyError(code, _, _) => code

@@ -1,8 +1,8 @@
 ///|
 pub(all) struct Position {
-  offset : Int
-  line : Int
-  column : Int
+  offset : Int32
+  line : Int32
+  column : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -18,11 +18,11 @@ pub fn LibertyError::render(self : LibertyError) -> String {
 
 ///|
 pub(all) struct Limits {
-  max_input_chars : Int
-  max_tokens : Int
-  max_token_chars : Int
-  max_depth : Int
-  max_nodes : Int
+  max_input_chars : Int32
+  max_tokens : Int32
+  max_token_chars : Int32
+  max_depth : Int32
+  max_nodes : Int32
 } derive(Eq, Debug)
 
 ///|

@@ -19,14 +19,14 @@ async fn print_result(config : Config, json : Json, text : String) -> Unit {
 }
 
 ///|
-pub async fn run(request : Request) -> Int {
+pub async fn run(request : Request) -> Int32 {
   match request {
     Help(command) => {
       @stdio.stdout.write(help(command))
       0
     }
     Version => {
-      @stdio.stdout.write("moon-liberty 0.4.2\n")
+      @stdio.stdout.write("moon-liberty 0.4.3\n")
       0
     }
     Run(config) => {
@@ -42,22 +42,20 @@ pub async fn run(request : Request) -> Int {
         let rows = @liberty.truth_table(expression, max_inputs=maximum)
         let json : Json = {
           "schema": "moonliberty.truth.v1",
-          "signals": @liberty.logic_signals(expression).to_json(),
-          "rows": rows
-          .map(row => {
-            (
-              {
-                "inputs": row.inputs
-                .map(pair => {
-                  (
-                    { "name": pair.0.to_json(), "value": pair.1.to_json() } :
-                    Json)
-                })
-                .to_json(),
-                "output": row.output.to_json(),
-              } : Json)
-          })
-          .to_json(),
+          "signals": Json(@liberty.logic_signals(expression)),
+          "rows": Json(
+            rows.map(row => {
+              (
+                {
+                  "inputs": Json(
+                    row.inputs.map(pair => {
+                      ({ "name": Json(pair.0), "value": Json(pair.1) } : Json)
+                    }),
+                  ),
+                  "output": Json(row.output),
+                } : Json)
+            }),
+          ),
         }
         print_result(config, json, json.stringify(indent=2) + "\n")
         return 0
@@ -161,7 +159,7 @@ pub async fn run(request : Request) -> Int {
           write_text(output, text, config.flags.contains("--force"))
           print_result(
             config,
-            { "status": "written", "output": output.to_json() },
+            { "status": "written", "output": Json(output) },
             "Wrote " + output + "\n",
           )
           0
@@ -193,7 +191,7 @@ async fn source_map(config : Config) -> Map[String, String] {
 }
 
 ///|
-async fn standard_command(config : Config) -> Int {
+async fn standard_command(config : Config) -> Int32 {
   let standard = @liberty.parse_standard(config.options["--standard"])
   let text = read_text(config.inputs[0])
   let sources = source_map(config)
@@ -226,8 +224,8 @@ async fn standard_command(config : Config) -> Int {
       config,
       {
         "status": "expanded",
-        "output": output.to_json(),
-        "target_standard": standard.label().to_json(),
+        "output": Json(output),
+        "target_standard": Json(standard.label()),
         "complete_standard_conformance": false,
       },
       "Wrote expanded library: " + output + "\n",

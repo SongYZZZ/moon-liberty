@@ -5,7 +5,7 @@ fn add_finding(
   path : String,
   message : String,
   position : Position,
-  severity? : Severity = Error,
+  severity~ : Severity = Error,
 ) -> Unit {
   findings.push({ code, severity, path, message, position, })
 }
@@ -337,19 +337,25 @@ pub fn lint_library(library : Library) -> Array[Finding] {
 
 ///|
 pub fn findings_json(findings : Array[Finding]) -> Json {
-  findings
-  .map(f => {
-    (
-      {
-        "code": f.code.to_json(),
-        "severity": (if f.severity == Error { "error" } else { "warning" }).to_json(),
-        "path": f.path.to_json(),
-        "message": f.message.to_json(),
-        "line": f.position.line.to_json(),
-        "column": f.position.column.to_json(),
-      } : Json)
-  })
-  .to_json()
+  Json(
+    findings.map(f => {
+      (
+        {
+          "code": Json(f.code),
+          "severity": Json(
+            if f.severity == Error {
+              "error"
+            } else {
+              "warning"
+            },
+          ),
+          "path": Json(f.path),
+          "message": Json(f.message),
+          "line": Json(f.position.line),
+          "column": Json(f.position.column),
+        } : Json)
+    }),
+  )
 }
 
 ///|
@@ -358,10 +364,10 @@ pub fn lint_json(library : Library) -> Json {
   let errors = findings.filter(f => f.severity == Error).length()
   {
     "schema": "moonliberty.lint.v1",
-    "library": library.name.to_json(),
-    "valid": (errors == 0).to_json(),
-    "errors": errors.to_json(),
-    "warnings": findings.filter(f => f.severity == Warning).length().to_json(),
+    "library": Json(library.name),
+    "valid": Json(errors == 0),
+    "errors": Json(errors),
+    "warnings": Json(findings.filter(f => f.severity == Warning).length()),
     "findings": findings_json(findings),
   }
 }

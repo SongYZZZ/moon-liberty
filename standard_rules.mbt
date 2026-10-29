@@ -355,7 +355,7 @@ fn std_integer(
   name : String,
   path : String,
   findings : Array[Finding],
-) -> Int? {
+) -> Int32? {
   guard group.attribute(name) is Some(atoms) &&
     attribute_value_valid("integer", atoms) else {
     return None

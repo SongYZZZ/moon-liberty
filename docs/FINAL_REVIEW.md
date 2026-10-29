@@ -30,6 +30,6 @@
 
 使用已安装 osc2026-guide 的工程检查，结合用户提供的九项验收指南及逐模块代码复核。申报书、README、模块及 Git origin 统一指向 SongYZZZ/moon-liberty。许可证 Apache-2.0，标准手册只引用不分发；来源见 [REFERENCES](REFERENCES.md)。旧工具链、认证和全局配置保留原位。
 
-本轮远程 CI、0.4.4 实际发布和独立注册表消费者将按结果补记；上一版发布证据已保留在 [0.4.3 消费者记录](history/CONSUMER_0_4_3.md)。未代填报名表或发送消息。
+0.4.4 已实际发布（200 OK），发布基准 ff0ecd360c330325ee05d335da30f36b6eac3597 的[全套远程 CI](https://github.com/SongYZZZ/moon-liberty/actions/runs/40874436465)通过，标签 v0.4.4 对应此基准。独立注册表消费者 native 严格检查/运行、JS/Wasm GC 严格检查全部通过，49 个源文件及清单/工具链配置逐字节相同。归档 SHA-256：f09113e461f409823fbaa53479b562149d7ac644643bfa6cf390e7eb1c1f9542。详情见 [消费者记录](CONSUMER.md)，上一版发布证据保留在 [0.4.3 记录](history/CONSUMER_0_4_3.md)。
 
 完整词法/字段级 schema、全部格式引用/父组约束、其他特殊根结构和 CCS/ECSM/LVF 等高级模型完整格式规则仍须闭环。compat 的 complete_standard_conformance 和 rule_inventory_exhaustive 继续为 false；不删减此前承诺的完整终点，不用测试数或发布代替该目标。

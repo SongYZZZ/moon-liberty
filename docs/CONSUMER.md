@@ -1,21 +1,38 @@
-# 0.4.3 发布包的独立消费者验证
+# 0.4.4 发布包的独立消费者验证
 
-2026-10-29，moon publish 返回 200 OK。SDK/core 为 0.10.16+b1a0e846e；发布源码 24b19b86bc4090b73dafcf0fb7d032d5f30a03d7，标签 v0.4.3 指向该基准，其[完整远程 CI](https://github.com/SongYZZZ/moon-liberty/actions/runs/40861285604)已通过。归档 SHA-256：8749c80a9a261e11ba146525aae4fe30e2a60b5e4f8efef6e108f5acd334e9d0。
+2026-10-29，moon publish 返回 200 OK。SDK/core 为 0.10.16+b1a0e846e；发布源码 ff0ecd360c330325ee05d335da30f36b6eac3597，标签 v0.4.4 指向该基准，其[完整远程 CI](https://github.com/SongYZZZ/moon-liberty/actions/runs/40874436465)已通过。归档 SHA-256：f09113e461f409823fbaa53479b562149d7ac644643bfa6cf390e7eb1c1f9542。
 
-独立目录 D:/Dev/Temp/moon-liberty-consumer-043-20261029 精确依赖 SongYZZZ/moon-liberty@0.4.3，由注册表实际下载，未使用本地路径。native 严格检查及实际运行、JS/Wasm GC 严格检查全部通过；49 个 .mbt、根 moon.mod/moon.pkg 及 toolchain.json 与发布源逐字节一致。归档不含 SDK、依赖缓存、构建、外部测试读取器和 artifacts。
+独立目录 D:/Dev/Temp/moon-liberty-consumer-044-20261029 精确依赖 SongYZZZ/moon-liberty@0.4.4，日志确认由注册表实际下载；没有本地路径依赖。native 严格检查及实际运行、JS/Wasm GC 严格检查与固定编译器/core 门禁全部通过。49 个 .mbt、根 moon.mod/moon.pkg 及 toolchain.json 与发布源码逐字节一致。发布归档 111 项，不含 .git、SDK、依赖缓存、构建或 artifacts，保留 LICENSE/NOTICE。
 
-在该目录以项目 use-toolchain.ps1 选择独立 SDK 后，实际执行 moon update、moon fmt、moon check --deny-warn、moon run .、两个其他后端的严格 check；check-toolchain.py --pinned 也确认编译器/core 的确是验收版本。此前 0.4.2 消费代码只更新版本，格式器接受新版规范写法；共享引脚、单位化查询、引号信号、局部类型、缺轴拒绝、SR 锁存器、BOM/include、续行、NUL 和有限外推均实际验证。
+保留上一版共享引脚、SI 查询、引号身份、单位、局部类型、缺轴拒绝、SR latch、BOM/include、续行、NUL 和有限外推断言；新增推导总线边界、简单属性形式绕过拒绝及负转换时间外推拒绝。消费者输出成功前全部断言实际执行。
 
 精确依赖清单：
 
 ```moonbit
-name = "SongYZZZ/liberty-consumer-043"
+name = "SongYZZZ/liberty-consumer-044"
+
 version = "0.0.1"
+
 preferred_target = "native"
-import { "SongYZZZ/moon-liberty@0.4.3" }
+
+import {
+  "SongYZZZ/moon-liberty@0.4.4",
+}
 ```
 
-moon.pkg 使用 import { "SongYZZZ/moon-liberty" @liberty, }。实际 main.mbt：
+moon.pkg：
+
+```moonbit
+import {
+  "SongYZZZ/moon-liberty" @liberty,
+}
+
+pkgtype(kind: "executable")
+```
+
+在该目录先调用项目 scripts/use-toolchain.ps1 选择固定 SDK，再执行 moon update、moon fmt、moon check --deny-warn、moon run .、moon check --target js --deny-warn、moon check --target wasm-gc --deny-warn；check-toolchain.py --pinned 同样通过。
+
+实际 main.mbt：
 
 ```moonbit
 ///|
@@ -148,10 +165,53 @@ fn main {
   if expanded.groups("cell").length() != 1 {
     abort("BOM fragment rejected")
   }
+  let bus = @liberty.parse_liberty(
+    "library(x){type(T){bit_width:4;bit_from:6;downto:true;}cell(C){bus(D){bus_type:T;pin(D[2]){}}}}",
+  ) catch {
+    e => abort(e.render())
+  }
+  if !@liberty.standard_findings(bus).any(f => f.code == "StandardBusMember") {
+    abort("inferred bus bounds ignored")
+  }
+  let declaration = @liberty.parse_liberty(
+    "library(x){define(rank,cell,integer);cell(C){rank(1.5);}}",
+  ) catch {
+    e => abort(e.render())
+  }
+  let declared_report = @liberty.compatibility_report(declaration) catch {
+    e => abort(e.render())
+  }
+  if !declared_report.findings.any(f => f.code == "DefinedAttributeForm") {
+    abort("declared simple attribute bypassed")
+  }
+  let transition = @liberty.load_library(
+    "library(x){time_unit:\"1ns\";capacitive_load_unit(1,pf);lu_table_template(T){variable_1:input_net_transition;index_1(\"1,2\");}cell(C){pin(A){direction:input;}pin(Y){direction:output;timing(){related_pin:\"A\";rise_transition(T){values(\"0.1,0.3\");}}}}}",
+  ) catch {
+    e => abort(e.render())
+  }
+  try
+    @liberty.query_timing(
+      transition,
+      "C",
+      "Y",
+      "A",
+      "rise_transition",
+      0.0,
+      0.0,
+      policy=@liberty.Extrapolate,
+    )
+  catch {
+    @liberty.LibertyError(code, _, _) =>
+      if code != "NegativeTransition" {
+        abort("wrong negative transition diagnostic")
+      }
+  } noraise {
+    _ => abort("negative transition accepted")
+  }
   println(
-    "Published 0.4.3 consumer passed: shared pins, SI query, quoted logic, units, local types",
+    "Published 0.4.4 consumer passed: shared pins, SI query, quoted logic, units, local types",
   )
 }
 ```
 
-机读证据在本地 artifacts/publication-043.json；[0.4.2 记录](history/CONSUMER_0_4_2.md)原样保留。成功安装和通过测试不代表全部 Liberty 2017.06 目标完成。
+机读证据位于本地 artifacts/publication-044.json；[0.4.3 记录](history/CONSUMER_0_4_3.md)原样保留。完整 Liberty 2017.06 及穷尽规则目录仍未完成，成功发布与消费者测试不替代这些目标。

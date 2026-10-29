@@ -1,10 +1,21 @@
-# 0.4.2 发布包的独立消费者验证
+# 0.4.3 发布包的独立消费者验证
 
-2026-10-28，moon publish 返回 200 OK。发布源码基准 2f26a066509eaaf2662e4c94f72d83efef173d4e，其[完整 CI](https://github.com/SongYZZZ/moon-liberty/actions/runs/40621122563)已通过；标签 v0.4.2 指向该基准。发布归档 SHA-256：18b77203d0a04fd8be34ea76941b7b3f06ecc5b03539dd884465c5c586431b8d。
+2026-10-29，moon publish 返回 200 OK。SDK/core 为 0.10.16+b1a0e846e；发布源码 24b19b86bc4090b73dafcf0fb7d032d5f30a03d7，标签 v0.4.3 指向该基准，其[完整远程 CI](https://github.com/SongYZZZ/moon-liberty/actions/runs/40861285604)已通过。归档 SHA-256：8749c80a9a261e11ba146525aae4fe30e2a60b5e4f8efef6e108f5acd334e9d0。
 
-独立目录 D:/Dev/Temp/moon-liberty-consumer-042-20261028 精确依赖 SongYZZZ/moon-liberty@0.4.2，由 moon update 实际从注册表下载，未使用本地路径。native 严格检查及实际运行、JS/Wasm GC 严格检查全部通过。49 个 .mbt 文件及根 moon.mod/moon.pkg 与发布源码逐字节一致；归档不含依赖缓存、构建、下载工具或 artifacts。
+独立目录 D:/Dev/Temp/moon-liberty-consumer-043-20261029 精确依赖 SongYZZZ/moon-liberty@0.4.3，由注册表实际下载，未使用本地路径。native 严格检查及实际运行、JS/Wasm GC 严格检查全部通过；49 个 .mbt、根 moon.mod/moon.pkg 及 toolchain.json 与发布源逐字节一致。归档不含 SDK、依赖缓存、构建、外部测试读取器和 artifacts。
 
-保留 0.4.1 的公共 API 消费代码，并实际验证 BOM 根文件/片段、紧邻续行、注释内 NUL 拒绝、statetable 内部节点引用及有限外推。成功输出仍为既有消费者摘要，新增断言均在输出前执行。实际主程序：
+在该目录以项目 use-toolchain.ps1 选择独立 SDK 后，实际执行 moon update、moon fmt、moon check --deny-warn、moon run .、两个其他后端的严格 check；check-toolchain.py --pinned 也确认编译器/core 的确是验收版本。此前 0.4.2 消费代码只更新版本，格式器接受新版规范写法；共享引脚、单位化查询、引号信号、局部类型、缺轴拒绝、SR 锁存器、BOM/include、续行、NUL 和有限外推均实际验证。
+
+精确依赖清单：
+
+```moonbit
+name = "SongYZZZ/liberty-consumer-043"
+version = "0.0.1"
+preferred_target = "native"
+import { "SongYZZZ/moon-liberty@0.4.3" }
+```
+
+moon.pkg 使用 import { "SongYZZZ/moon-liberty" @liberty, }。实际 main.mbt：
 
 ```moonbit
 ///|
@@ -138,9 +149,9 @@ fn main {
     abort("BOM fragment rejected")
   }
   println(
-    "Published 0.4.2 consumer passed: shared pins, SI query, quoted logic, units, local types",
+    "Published 0.4.3 consumer passed: shared pins, SI query, quoted logic, units, local types",
   )
 }
 ```
 
-验证命令：moon update、moon check --deny-warn、moon run .、moon check --target js --deny-warn、moon check --target wasm-gc --deny-warn。机读记录在本地 artifacts/publication-042.json，上一轮记录见 [0.4.1 消费者验证](history/CONSUMER_0_4_1.md)。接口与安装验证不等同于完整标准兼容。
+机读证据在本地 artifacts/publication-043.json；[0.4.2 记录](history/CONSUMER_0_4_2.md)原样保留。成功安装和通过测试不代表全部 Liberty 2017.06 目标完成。

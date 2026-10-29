@@ -6,8 +6,8 @@ jobs:
   acceptance:
     runs-on: ubuntu-latest
     env:
-      MOON_HOME: ${{ runner.temp }}/moon-liberty-sdk
-      MOONBIT_HOME: ${{ runner.temp }}/moon-liberty-sdk
+      MOON_HOME: ${{ github.workspace }}/.tools/moon016
+      MOONBIT_HOME: ${{ github.workspace }}/.tools/moon016
     steps:
       - uses: actions/checkout@v4
         with:

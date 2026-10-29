@@ -81,17 +81,17 @@
     },
     {
       "id": "bus-range",
-      "reference": "Reference type group; UG1 bus groups",
+      "reference": "Reference Bus Groups 1-76 through 1-77; type attributes 2-123 through 2-125",
       "evidence": "standard_rules_test.mbt",
       "test": "bus type endpoints width and direction are consistent",
-      "limitations": "Cross-checks explicit endpoints/width; optional defaults are not synthesized."
+      "limitations": "Cross-checks explicit endpoints/width; also infers one endpoint from explicit width and direction. Other default combinations remain open."
     },
     {
       "id": "bus-members",
       "reference": "UG1 4-41 through 4-43",
       "evidence": "standard_rules_test.mbt",
       "test": "unquoted bus members ranges and shared direction validate",
-      "limitations": "Bracket names and explicitly declared bounds; no vector expansion or custom naming-style validator."
+      "limitations": "Nonnegative bracket members within explicit or explicitly inferable bounds; no vector expansion or custom naming-style validator."
     },
     {
       "id": "state-arguments",
@@ -105,7 +105,7 @@
       "reference": "UG1 chapter 5 state equations",
       "evidence": "standard_rules_test.mbt",
       "test": "state expressions resolve cell inputs and internal nodes",
-      "limitations": "Scalar Boolean references; bank/vector equations and physical simulation remain open."
+      "limitations": "Scalar Boolean references, one cached scope per cell; bank/vector equations and physical simulation remain open."
     },
     {
       "id": "statetable-nodes",

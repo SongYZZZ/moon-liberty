@@ -68,7 +68,7 @@
       "scope": "总线、bundle 与 type",
       "status": "partial",
       "open_items": [
-        "全部总线/bundle 属性规则、默认范围推导、自定义命名和向量展开；直接多名称标量引脚已实现"
+        "全部总线/bundle 属性规则、其余默认范围组合、自定义命名和向量展开；直接多名称标量引脚及显式宽度/单端点/方向的范围推导已实现"
       ],
       "evidence": [
         "tests/fixtures/liberty2017/preserve-models.lib",

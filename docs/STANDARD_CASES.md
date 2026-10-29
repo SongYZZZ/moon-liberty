@@ -1,6 +1,6 @@
 # 2017.06 兼容与求值边界案例
 
-2026-10-28 按 0.4.2 重新实际运行。以下输入为本项目原创结构/反例数据，Apache-2.0；不是来自手册的复制示例，也不是表征完成的工艺库，不能证明完整标准符合性。
+2026-10-29 按 0.4.4 重新实际运行。以下输入为本项目原创结构/反例数据，Apache-2.0；不是来自手册的复制示例，也不是表征完成的工艺库，不能证明完整标准符合性。
 
 ## A：完整语句 include 与单位化查询
 
@@ -45,7 +45,7 @@ moon build --release --deny-warn
 python scripts/check-standard.py --executable _build/native/release/build/cmd/moon-liberty/moon-liberty.exe
 ```
 
-本次自动脚本 29 次 CLI 执行断言全部通过，报告为 artifacts/standard-cases.json。除上述三个场景，还验证错误 JSON 源映射、嵌套 include 拒绝、保留字段、完整符合性字段恒为 false，以及总线、状态表、LVF/模板、负转换时间等格式反例。持续集成重复执行。
+本次自动脚本 33 次 CLI 执行断言全部通过，报告为 artifacts/standard-cases.json。除上述三个场景，还验证错误 JSON 源映射、嵌套 include 拒绝、保留字段、完整符合性字段恒为 false，以及总线、状态表、LVF/模板、负转换时间等格式反例。持续集成重复执行。
 
 ## D：共享标量引脚与新增不变量
 
@@ -58,3 +58,11 @@ shared-pins.lib 使用 pin(A,B)、pin(Y,Z)。inspect 得到 4 个直接标量引
 ## F：输入编码与状态节点兼容
 
 0.4.2 的 CLI 验收共 27 次，新增 LF/CRLF 紧邻续行、注释内 NUL 拒绝且不产生输出、BOM 文件读取/规范化/差异归零。不变量脚本额外核对 statetable 内部节点在 compat 与 lint 中一致接受；高精度数值样本包含中间乘法溢出但最终结果有限的外推。它们均沿用既有命令，未增加物理求值模型。
+
+## E：推导总线边界、声明形式与负外推
+
+自编输入 type(T){bit_width:4;bit_from:6;downto:true;} 确定的范围为 6 到 3；bus(D) 的 D[6:3] 可通过已实现检查，D[2] 返回 StandardBusMember。只有一个端点但缺少方向时仍不推导，其他默认组合不在此增量内。位宽推导出负端点返回 StandardBusRange；即使没有可推导边界，D[-1] 也返回 StandardBusMember。
+
+define(rank,cell,integer);cell(C){rank(1.5);} 不能再绕过简单属性类型检查，返回 DefinedAttributeForm；未声明厂商复杂属性仍保留。4096 个有效定义/值、4096 个状态分组和 64 个父作用域共用属性的反例在 scripts/audit-invariants.py 中构造，最后一项仅报告一次父组错误。
+
+一维 rise_transition/fall_transition 表在轴 1、2 上取非负值 0.1、0.3；向 0 外推会产生负转换时间，SI query 返回 NegativeTransition。cell_rise/cell_fall 的合法负延迟和通用 lookup_table 外推仍允许，零转换时间也允许。精确输入和断言见 query_test.mbt；命令行拒绝路径纳入不变量脚本。

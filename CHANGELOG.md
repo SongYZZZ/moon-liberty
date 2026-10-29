@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.4 — 2026-10-29
+
+Cache complete state-reference scopes once per cell, and index user declarations
+by separate name/parent components. Prevent repeated out-of-scope diagnostics and
+reject declared simple attributes written with complex syntax. Infer bus member
+bounds only from explicit width, one endpoint and direction; reject negative
+members and inferred negative endpoints. Reject negative SI transition results
+after extrapolation while retaining legal negative propagation delay. Add thirteen
+focused regressions, 4096-item workloads and output-failure preservation checks.
+Public APIs, nine commands and physical evaluation scope remain unchanged; full
+Liberty 2017.06 conformance remains incomplete.
+
 ## 0.4.3 — 2026-10-29
 
 Raise the compiler floor to moonc 0.10.16 and pin SDK/core 0.10.16+b1a0e846e

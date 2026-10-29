@@ -1,6 +1,6 @@
 # 十月报名材料核对
 
-核对日期：2026-10-28。以[官方十月活动](https://moonbitlang.github.io/Hackathon2026/)为主，不把其他月份的规则直接套用。公开源码位置为 [src/App.tsx](https://github.com/moonbitlang/Hackathon2026/blob/main/src/App.tsx)，本轮重新读取默认分支的公开源码，核对十月报名与验收条款。原页面链接的飞书完整章程未成功读取，因此不声称逐条验证不可访问内容。
+规则核对日期：2026-10-28，工程证据更新至 2026-10-29。以[官方十月活动](https://moonbitlang.github.io/Hackathon2026/)为主，不把其他月份的规则直接套用。公开源码位置为 [src/App.tsx](https://github.com/moonbitlang/Hackathon2026/blob/main/src/App.tsx)，本轮重新读取默认分支的公开源码，核对十月报名与验收条款。原页面链接的飞书完整章程未成功读取，因此不声称逐条验证不可访问内容。
 
 ## 已核对的公开要求
 
@@ -9,7 +9,7 @@
 | MoonBit 为主要实现语言，公共仓库 | 核心及 CLI 为 MoonBit，SongYZZZ/moon-liberty |
 | 原创/移植/维护均可，须有实质新贡献 | 原创领域实现；来源及差异详见 REFERENCES、ECOSYSTEM_REVIEW |
 | 连续、有意义的开发记录 | 功能、缺陷修复、测试及文档的实际 Git 提交；身份脚本要求 >=11 |
-| 清晰 README、可运行例子、必要测试 | 两个例子、真实样本、348 原生测试、CLI/独立验证和 CI |
+| 清晰 README、可运行例子、必要测试 | 两个例子、真实样本、361 原生测试、CLI/独立验证和 CI |
 | OSI 开源许可证，尊重上游 | Apache-2.0；数据与独立测试工具分别披露 |
 | 原创性、真实性和可解释性 | 不声称完整 STA、全面标准符合性或全球首创，界定已验证范围 |
 | 最多 3 人，十月最多提交 3 次 | 本材料仅宋永振一人；提交/修改次数须按实际报名记录与官方口径确认 |

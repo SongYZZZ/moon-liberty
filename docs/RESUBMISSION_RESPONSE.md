@@ -1,6 +1,6 @@
 # 针对 Liberty 标准范围意见的补充说明
 
-2026-10-28，项目与唯一正式申报书均为 MoonLiberty，仓库 https://github.com/SongYZZZ/moon-liberty ，本轮版本 0.4.2。正式上传附件为根 PROJECT_APPLICATION.md。
+2026-10-29，项目与唯一正式申报书均为 MoonLiberty，仓库 https://github.com/SongYZZZ/moon-liberty ，本轮版本 0.4.3。正式上传附件为根 PROJECT_APPLICATION.md。
 
 ## 固定版本和最终目标
 
@@ -22,3 +22,5 @@
 0.4.1 补丁仅收紧已实现路径：缺轴表拒绝、整数参数严格解析及 latch 配对检查；无新公共 API 或计算范围扩张。完整标准符合性仍为 false。
 
 0.4.2 在保守复查中修复四处已复现的边界缺陷，并新增根文件/include 片段开头 UTF-8 BOM 的编码兼容。新增 11 项回归；标准规则族、公开接口和九个命令保持一致。
+
+0.4.3 按新增验收下限迁移到 moonc 0.10.16，并更新 CI 和本地可复现启动方式。已审核通过选手按所提供指南无需另交验收表格，保持 GitHub 内容更新即可；此说明不表示本项目已获官方审核通过。

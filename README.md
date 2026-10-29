@@ -4,7 +4,7 @@
 
 [GitHub 仓库](https://github.com/SongYZZZ/moon-liberty) · [正式项目申报书](PROJECT_APPLICATION.md) · [范围与限制](docs/SUPPORT.md) · [验证记录](docs/TESTING.md) · [生态检索](docs/ECOSYSTEM_REVIEW.md)
 
-**标准基线固定为 Synopsys Liberty 2017.06。**最终目标是该版本完整格式读写与格式层规则闭环；当前 0.4.2 仍为部分实现，完整符合性明确标为 false。[标准兼容契约](docs/STANDARD_CONFORMANCE.md)说明终点、缺口及与受限求值的关系，[复审说明](docs/RESUBMISSION_RESPONSE.md)说明本轮改动。
+**标准基线固定为 Synopsys Liberty 2017.06。**最终目标是该版本完整格式读写与格式层规则闭环；当前 0.4.3 仍为部分实现，完整符合性明确标为 false。[标准兼容契约](docs/STANDARD_CONFORMANCE.md)说明终点、缺口及与受限求值的关系，[复审说明](docs/RESUBMISSION_RESPONSE.md)说明本轮改动。
 
 原创 MoonBit 基础库与原生命令行，面向 PDK 维护者、EDA 工具作者和数字电路教学。将文本库转成可检查的结构，按明确的物理单位查询延迟，并在库升级时指出具体字段、逻辑函数或时序表变化。实现使用 Apache-2.0；作者为宋永振（SongYZZZ）。
 
@@ -22,7 +22,15 @@
 
 ## 快速运行
 
-使用 MoonBit SDK **0.10.14+7d59c7ec9** 和对应 core（CI 固定版本），原生后端需 C 工具链。所有命令从本仓库根目录运行：
+要求 **moonc ≥ 0.10.16**。当前及 CI 使用 SDK/core **0.10.16+b1a0e846e**，固定信息见 [toolchain.json](toolchain.json)；原生后端需 C 工具链。Windows x64 可在仓库根安装独立工具链并选择当前终端：
+
+```powershell
+python scripts/setup-toolchain.py
+. ./scripts/use-toolchain.ps1
+python scripts/check-toolchain.py --pinned
+```
+
+安装器校验固定归档，仅写入忽略的 .tools/moon016，下载缓存默认在 D:/Dev/Temp（存在时），不更改全局 PATH 或已有 SDK。其他平台按[官方安装说明](https://www.moonbitlang.com/download)选择上述 SDK 和对应 core，并运行 python scripts/check-toolchain.py。之后所有命令从本仓库根目录运行：
 
 ```powershell
 moon update
@@ -48,7 +56,7 @@ moon run cmd/moon-liberty -- truth "!(A & B)" --json
 
 ## 用作 MoonBit 库
 
-项目名为 SongYZZZ/moon-liberty；0.4.2 已发布至 Mooncakes，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
+项目名为 SongYZZZ/moon-liberty；0.4.3 已发布至 Mooncakes，可用 moon add SongYZZZ/moon-liberty 添加，也可通过本仓库查看实现。moon.pkg 显式设置易读的包别名：
 
 ```moonbit
 import {
@@ -114,3 +122,5 @@ moon bench --target native -p SongYZZZ/moon-liberty/benchmarks
 0.4.1 为保守修复版：统一表格形状校验、拒绝缺轴具名表的标量退化，严格解析 CLI 整数选项，并补齐 latch 的字段配对/状态值检查。SR 锁存器仍可省略 data_in/enable；公开 API 签名与 0.4.0 一致。
 
 0.4.2：补齐文件及 include 片段开头 UTF-8 BOM 的输入兼容，写出统一不带 BOM；修复紧邻裸值的续行、注释中 NUL 漏检、statetable 内部节点引用误报和有限外推的中间溢出。接口与求值范围保持一致。
+
+0.4.3 按 2026-10-29 提供的九项验收指南升级工具链。迁移新版 JSON 构造及格式器的 Int32/默认参数规范写法，代表用例的 JSON 和写出内容与旧版一致；详见[逐项验收证据](docs/ACCEPTANCE.md)。完整标准符合性仍为 false。

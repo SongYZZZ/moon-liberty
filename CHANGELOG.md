@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.3 — 2026-10-29
+
+Raise the compiler floor to moonc 0.10.16 and pin SDK/core 0.10.16+b1a0e846e
+for the updated acceptance guide. Add an isolated Windows SDK installer,
+terminal activation and compiler/core checks; CI now runs both examples as well
+as strict check/build/test and independent checks. Migrate deprecated to_json
+calls to Json(value), plus the SDK formatter's Int32/default-argument spelling.
+No domain algorithms or evaluation scope are added. Recorded representative
+JSON and written-file outputs remain identical; full standard conformance
+remains incomplete.
+
 ## 0.4.2 — 2026-10-28
 
 Conservative parser and correctness patch. Accept one initial UTF-8 BOM in a

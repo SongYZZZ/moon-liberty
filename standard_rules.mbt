@@ -380,6 +380,31 @@ fn std_integer(
 }
 
 ///|
+// Infer only when width, one endpoint and direction are explicitly supplied.
+// Other optional-default combinations remain outside this implemented rule.
+fn std_bus_endpoints(
+  from : Int32?,
+  to : Int32?,
+  width : Int32?,
+  direction : String?,
+) -> (Int32, Int32)? {
+  if from is Some(from) && to is Some(to) {
+    return Some((from, to))
+  }
+  guard width is Some(width) && width > 0 else { return None }
+  let delta = match direction {
+    Some("true") => 1 - width
+    Some("false") => width - 1
+    _ => return None
+  }
+  match (from, to) {
+    (Some(from), None) => Some((from, from + delta))
+    (None, Some(to)) => Some((to - delta, to))
+    _ => None
+  }
+}
+
+///|
 fn std_bus_type(
   group : Group,
   path : String,
@@ -396,6 +421,14 @@ fn std_bus_type(
   if (from is Some(n) && n < 0) || (to is Some(n) && n < 0) {
     std_issue(
       findings, "StandardBusRange", group, path, "bus member numbers must be nonnegative",
+    )
+  }
+  if (from == None || to == None) &&
+    std_bus_endpoints(from, to, width, group.text("downto"))
+    is Some((first, last)) &&
+    (first < 0 || last < 0) {
+    std_issue(
+      findings, "StandardBusRange", group, path, "width and direction imply a negative bus endpoint",
     )
   }
   if width is Some(width) && from is Some(from) && to is Some(to) {
@@ -453,6 +486,8 @@ fn std_bus(
   }
   let from = std_integer(definition, "bit_from", path, findings)
   let to = std_integer(definition, "bit_to", path, findings)
+  let width = std_integer(definition, "bit_width", path, findings)
+  let endpoints = std_bus_endpoints(from, to, width, definition.text("downto"))
   for pin in group.groups("pin") {
     if group.text("direction") is Some(direction) &&
       pin.text("direction") is Some(overridden) &&
@@ -493,7 +528,13 @@ fn std_bus(
               continue
             }
           }
-          if from is Some(from) && to is Some(to) {
+          if number < 0.0 {
+            std_issue(
+              findings, "StandardBusMember", pin, path, "bus member numbers must be nonnegative",
+            )
+            continue
+          }
+          if endpoints is Some((from, to)) {
             let low = if from < to { from } else { to }
             let high = if from > to { from } else { to }
             if number < low.to_double() || number > high.to_double() {
@@ -506,6 +547,12 @@ fn std_bus(
       }
     }
   }
+}
+
+///|
+priv struct StdCellScope {
+  names : Map[String, Bool]
+  statetables : Int32
 }
 
 ///|
@@ -541,7 +588,7 @@ fn std_cell_names(cell : Group) -> Map[String, Bool] {
 ///|
 fn std_state(
   group : Group,
-  cell : Group?,
+  cell : StdCellScope?,
   path : String,
   findings : Array[Finding],
 ) -> Unit {
@@ -606,7 +653,7 @@ fn std_state(
     }
   }
   if cell is Some(cell) {
-    let names = std_cell_names(cell)
+    let names = cell.names
     for
       key in [
         "clocked_on", "clocked_on_also", "next_state", "clear", "preset", "data_in",
@@ -639,7 +686,7 @@ fn std_state(
 ///|
 fn std_statetable(
   group : Group,
-  cell : Group?,
+  cell : StdCellScope?,
   path : String,
   findings : Array[Finding],
 ) -> Unit {
@@ -668,7 +715,7 @@ fn std_statetable(
     )
   }
   if cell is Some(cell) {
-    let declared = std_cell_names(cell)
+    let declared = cell.names
     for name in inputs {
       if !declared.contains(name) {
         std_issue(
@@ -680,7 +727,7 @@ fn std_statetable(
         )
       }
     }
-    if cell.groups("statetable").length() > 1 {
+    if cell.statetables > 1 {
       std_issue(
         findings, "StandardStateTableNodes", group, path, "cell may contain only one statetable",
       )
@@ -725,7 +772,7 @@ fn std_statetable(
 fn std_walk(
   group : Group,
   parent : String,
-  cell : Group?,
+  cell : StdCellScope?,
   templates : Map[String, Group],
   types : TypeScope,
   path : String,
@@ -756,7 +803,10 @@ fn std_walk(
   let scope = if ["cell", "test_cell", "scaled_cell", "model"].contains(
       group.kind,
     ) {
-    Some(group)
+    Some({
+      names: std_cell_names(group),
+      statetables: group.groups("statetable").length(),
+    })
   } else {
     cell
   }

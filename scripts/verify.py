@@ -49,7 +49,7 @@ def main():
     assert [r["output"] for r in rows] == [True, True, True, False]
     assert run("truth", "A", "--max-inputs", "1.00000000000000001", code=2, parse=False).stderr
     assert run("diff", basic, basic, "--max-changes", "2.00000000000000001", code=2, parse=False).stderr
-    assert run("--version", parse=False).stdout.strip() == "moon-liberty 0.4.3"
+    assert run("--version", parse=False).stdout.strip() == "moon-liberty 0.4.4"
     artifacts = ROOT / "artifacts"
     artifacts.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="cli-", dir=artifacts) as tmp:
@@ -92,6 +92,19 @@ def main():
         assert run("diff", basic, unsigned, "--json")["total_changes"] == 0
         # A malformed integer cannot silently turn into a truncated limit.
         assert run("truth", "A", "--max-inputs", "1.5", code=2, parse=False).stderr
+        # Failure paths must preserve an existing output and neighboring data.
+        run("normalize", malformed, "-o", output, "--force", code=2, parse=False)
+        assert hashlib.sha256(output.read_bytes()).hexdigest() == before
+        missing = target / "missing-parent" / "out.lib"
+        run("normalize", basic, "-o", missing, code=2, parse=False)
+        assert not missing.exists()
+        directory_output = target / "directory-output"
+        directory_output.mkdir()
+        keeper = directory_output / "keep.bin"
+        keeper.write_bytes(b"preserve")
+        run("normalize", basic, "-o", directory_output, "--force", code=2, parse=False)
+        assert keeper.read_bytes() == b"preserve"
+        assert not list(target.glob("*.moonliberty-*.tmp"))
 
     sources = [p for p in ROOT.rglob("*.mbt") if not any(part in
                {".mooncakes", "_build", ".tools", "artifacts"} for part in p.parts)]

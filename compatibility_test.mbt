@@ -245,3 +245,56 @@ test "integer declarations reject decimal and exponent float spelling" {
     ),
   )
 }
+
+///|
+test "out of scope user attribute emits one finding regardless of declared parents" {
+  let body = StringBuilder()
+  for i in 0..<64 {
+    body.write_string("define(rank,p\{i},integer);")
+  }
+  body.write_string("rank:1;")
+  let report = format_report(body.to_string())
+  assert_eq(
+    report.findings.filter(f => f.code == "DefinedAttributeParent").length(),
+    1,
+  )
+}
+
+///|
+test "declaration indexes keep name and parent components separate" {
+  assert_eq(
+    format_codes(
+      "define_group(part/cell,library);define(tag/part,cell,integer);define(tag,part/cell,string);cell(C){tag/part:2;}part/cell(M){tag:\"ok\";}",
+    ),
+    [],
+  )
+}
+
+///|
+test "many user declarations still resolve every value and preserve first definitions" {
+  let body = StringBuilder()
+  for i in 0..<512 {
+    body.write_string("define(a\{i},cell,integer);")
+  }
+  body.write_string("define(a0,cell,string);cell(C){")
+  for i in 0..<512 {
+    body.write_string("a\{i}:\{i};")
+  }
+  body.write_string("}")
+  let report = format_report(body.to_string())
+  assert_eq(
+    report.findings.filter(f => f.code == "DuplicateDefine").length(),
+    1,
+  )
+  assert_false(report.findings.any(f => f.code == "DefinedAttributeType"))
+}
+
+///|
+test "declared simple attributes cannot bypass type checks with complex syntax" {
+  assert_true(
+    format_codes("define(rank,cell,integer);cell(C){rank(1.5);}").contains(
+      "DefinedAttributeForm",
+    ),
+  )
+  assert_eq(format_codes("cell(C){vendor_values(1.5);}"), [])
+}

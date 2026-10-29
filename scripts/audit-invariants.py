@@ -18,13 +18,13 @@ def main():
     exe = parser.parse_args().executable.resolve()
     calls = 0
 
-    def run(*args, code=0):
+    def run(*args, code=0, json_output=True):
         nonlocal calls
         result = subprocess.run([str(exe), *map(str, args)], cwd=ROOT, text=True,
                                 encoding="utf-8", capture_output=True, timeout=30)
         calls += 1
         assert result.returncode == code, (args, result.returncode, result.stdout[:1500], result.stderr)
-        return json.loads(result.stdout)
+        return json.loads(result.stdout) if json_output else result
 
     artifacts = ROOT / "artifacts"
     artifacts.mkdir(exist_ok=True)
@@ -68,6 +68,25 @@ def main():
         assert run("compat", scoped, "--standard", "2017.06", "--json")["implemented_checks_passed"]
         scoped_wall_ms = (time.perf_counter() - started) * 1000
 
+        indexed = fixture("indexed-definitions.lib", "".join(f"define(a{i},cell,integer);" for i in range(4096)) +
+                          "cell(C){" + "".join(f"a{i}:{i};" for i in range(4096)) + "}")
+        started = time.perf_counter()
+        assert run("compat", indexed, "--standard", "2017.06", "--json")["implemented_checks_passed"]
+        declarations_wall_ms = (time.perf_counter() - started) * 1000
+        repeated = fixture("state-scopes.lib", "cell(C){" + "".join(f'ff(Q{i},N{i}){{clocked_on:"1";next_state:"0";}}' for i in range(4096)) + "}")
+        started = time.perf_counter()
+        assert run("compat", repeated, "--standard", "2017.06", "--json")["implemented_checks_passed"]
+        states_wall_ms = (time.perf_counter() - started) * 1000
+        bad_scope = fixture("diagnostic-count.lib", "".join(f"define(rank,p{i},integer);" for i in range(64)) + "rank:1;")
+        findings = run("compat", bad_scope, "--standard", "2017.06", "--json", code=1)["findings"]
+        assert sum(f["code"] == "DefinedAttributeParent" for f in findings) == 1
+        invalid_transition = fixture("negative-result.lib", 'time_unit:"1ns";capacitive_load_unit(1,pf);'
+                                     'lu_table_template(T){variable_1:input_net_transition;index_1("1,2");}'
+                                     'cell(C){pin(A){direction:input;}pin(Y){direction:output;timing(){related_pin:"A";rise_transition(T){values("0.1,0.3");}}}}')
+        rejected = run("query", invalid_transition, "--cell", "C", "--pin", "Y", "--related", "A", "--table", "rise_transition",
+                       "--slew", "0", "--load", "0", "--policy", "extrapolate", code=2, json_output=False)
+        assert "NegativeTransition" in rejected.stderr
+
         rng = random.Random(20261026)
         samples = [(-1e308, 1e308, 0.0), (-1e308, 1e308, 0.5),
                    (-1e308, 1e308, 1.0), (-1e308, 9e307, 1.01),
@@ -96,6 +115,9 @@ def main():
                   quoted_pin_identity=True, shared_pin_extraction=True,
                   local_type_scope=True, incomplete_state_rejected=True,
                   statetable_internal_references=True,
+                  declaration_workload=dict(declarations=4096, wall_ms_including_process_and_io=declarations_wall_ms),
+                  state_scope_workload=dict(groups=4096, wall_ms_including_process_and_io=states_wall_ms),
+                  scope_diagnostic_amplification_prevented=True, negative_transition_result_rejected=True,
                   scoped_workload=dict(library_types=2048, cells=2048, wall_ms_including_process_and_io=scoped_wall_ms),
                   complete_standard_conformance=False)
     (artifacts / "invariant-audit.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

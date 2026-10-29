@@ -463,3 +463,76 @@ test "negative transition is also rejected by domain lint and query" {
     _ => fail("negative slew returned")
   }
 }
+
+///|
+test "explicit width endpoint and direction constrain inferred bus members" {
+  for
+    sample in [
+      ("bit_from:3;downto:true;", "D[3:0]", "D[4]"),
+      ("bit_from:4;downto:false;", "D[4:7]", "D[8]"),
+      ("bit_to:0;downto:true;", "D[3:0]", "D[4]"),
+      ("bit_to:7;downto:false;", "D[4:7]", "D[3]"),
+    ] {
+    let prefix = "type(T){bit_width:4;" +
+      sample.0 +
+      "}cell(C){bus(D){bus_type:T;pin("
+    assert_eq(std_codes(prefix + sample.1 + "){}}}"), [])
+    assert_true(
+      std_codes(prefix + sample.2 + "){}}}").contains("StandardBusMember"),
+    )
+  }
+}
+
+///|
+test "inferred bus endpoints cannot silently become negative" {
+  for
+    body in [
+      "bit_width:4;bit_from:1;downto:true;", "bit_width:4;bit_to:1;downto:false;",
+    ] {
+    assert_true(std_codes("type(T){" + body + "}").contains("StandardBusRange"))
+  }
+}
+
+///|
+test "cached state scopes retain sibling references and isolate cells" {
+  let root = @liberty.parse_liberty(
+    "library(x){cell(A){ff(Q,QN){clocked_on:\"1\";next_state:\"0\";}ff(R,RN){clocked_on:\"Q\";next_state:\"R\";}}cell(B){ff(S,SN){clocked_on:\"1\";next_state:\"Q\";}}}",
+  )
+  let issues = @liberty.standard_findings(root).filter(f => {
+    f.code == "UnknownSignal"
+  })
+  assert_eq(issues.length(), 1)
+  assert_true(issues[0].path.contains("cell(B)"))
+}
+
+///|
+test "nested test cell state scopes do not inherit outer state names" {
+  let codes = std_codes(
+    "cell(A){ff(Q,QN){clocked_on:\"1\";next_state:\"0\";}test_cell(){ff(T,TN){clocked_on:\"1\";next_state:\"Q\";}}}",
+  )
+  assert_eq(codes.filter(code => code == "UnknownSignal").length(), 1)
+}
+
+///|
+test "many state equations resolve against the same complete cell declaration set" {
+  let body = StringBuilder()
+  body.write_string("cell(C){")
+  for i in 0..<512 {
+    body.write_string("ff(Q\{i},N\{i}){clocked_on:\"1\";next_state:\"Q511\";}")
+  }
+  body.write_string("}")
+  assert_eq(std_codes(body.to_string()), [])
+}
+
+///|
+test "negative bus member numbers are rejected even when endpoints remain unspecified" {
+  for pin_name in ["D[-1]", "D[-1:0]"] {
+    assert_true(
+      std_codes(
+        "type(T){bit_width:8;}cell(C){bus(D){bus_type:T;pin(" +
+        pin_name +
+        "){}}}",
+      ).contains("StandardBusMember"),
+    )
+  }
+}

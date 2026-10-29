@@ -161,3 +161,96 @@ test "an unsupported axis does not receive an assumed physical dimension" {
   )
   assert_eq(query_error(library), "UnsupportedAxis")
 }
+
+///|
+fn transition_fixture(
+  kind : String,
+  values : String,
+) -> @liberty.Library raise @liberty.LibertyError {
+  @liberty.load_library(
+    "library(x){time_unit:\"1ns\";capacitive_load_unit(1,pf);lu_table_template(T){variable_1:input_net_transition;index_1(\"1,2\");}cell(C){pin(A){direction:input;}pin(Y){direction:output;timing(){related_pin:\"A\";" +
+    kind +
+    "(T){values(\"" +
+    values +
+    "\");}}}}}",
+  )
+}
+
+///|
+test "SI transition queries reject negative lower extrapolation results" {
+  for kind in ["rise_transition", "fall_transition"] {
+    let library = transition_fixture(kind, "0.1,0.3")
+    try
+      @liberty.query_timing(
+        library,
+        "C",
+        "Y",
+        "A",
+        kind,
+        0.0,
+        0.0,
+        policy=@liberty.Extrapolate,
+      )
+    catch {
+      @liberty.LibertyError(code, _, _) => assert_eq(code, "NegativeTransition")
+    } noraise {
+      _ => fail("negative transition returned")
+    }
+  }
+}
+
+///|
+test "SI transition queries reject negative upper extrapolation results" {
+  for kind in ["rise_transition", "fall_transition"] {
+    let library = transition_fixture(kind, "0.3,0.1")
+    try
+      @liberty.query_timing(
+        library,
+        "C",
+        "Y",
+        "A",
+        kind,
+        3.0e-9,
+        0.0,
+        policy=@liberty.Extrapolate,
+      )
+    catch {
+      @liberty.LibertyError(code, _, _) => assert_eq(code, "NegativeTransition")
+    } noraise {
+      _ => fail("negative transition returned")
+    }
+  }
+}
+
+///|
+test "transition result guard retains legal delay and generic extrapolation behavior" {
+  let delay = @liberty.query_timing(
+    transition_fixture("cell_rise", "0.1,0.3"),
+    "C",
+    "Y",
+    "A",
+    "cell_rise",
+    0.0,
+    0.0,
+    policy=@liberty.Extrapolate,
+  )
+  assert_true(delay.seconds < 0.0)
+  let generic = @liberty.lookup_table(
+    table([1.0, 2.0], [], [0.1, 0.3]),
+    0.0,
+    policy=@liberty.Extrapolate,
+  )
+  assert_true(generic.value < 0.0)
+  let zero = @liberty.query_timing(
+    transition_fixture("rise_transition", "1,2"),
+    "C",
+    "Y",
+    "A",
+    "rise_transition",
+    0.0,
+    0.0,
+    policy=@liberty.Extrapolate,
+  )
+  assert_eq(zero.seconds, 0.0)
+  assert_true(zero.extrapolated)
+}

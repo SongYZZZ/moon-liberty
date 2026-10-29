@@ -42,19 +42,6 @@ pub(all) struct CompatibilityReport {
 } derive(Debug)
 
 ///|
-priv struct UserAttribute {
-  name : String
-  parent : String
-  value_type : String
-}
-
-///|
-priv struct UserGroup {
-  name : String
-  parent : String
-}
-
-///|
 fn declaration_argument(
   arguments : Array[Array[Atom]],
   index : Int32,
@@ -71,8 +58,8 @@ fn declaration_argument(
 ///|
 fn collect_declarations(
   root : Group,
-  attrs : Array[UserAttribute],
-  groups : Array[UserGroup],
+  attrs : Map[String, Map[String, String]],
+  groups : Map[String, String],
   findings : Array[Finding],
 ) -> Unit {
   for item in root.items {
@@ -89,16 +76,20 @@ fn collect_declarations(
             findings, "InvalidDefine", "/library/define", "define needs name, group and boolean/string/integer/float type",
             pos,
           )
-        } else if attrs.any(a => a.name == name && a.parent == parent) {
-          add_finding(
-            findings,
-            "DuplicateDefine",
-            "/library/define/" + name,
-            "attribute definition repeated",
-            pos,
-          )
         } else {
-          attrs.push({ name, parent, value_type, })
+          let parents = attrs.get(name).unwrap_or(Map([]))
+          if parents.contains(parent) {
+            add_finding(
+              findings,
+              "DuplicateDefine",
+              "/library/define/" + name,
+              "attribute definition repeated",
+              pos,
+            )
+          } else {
+            parents[parent] = value_type
+            attrs[name] = parents
+          }
         }
       }
       Complex("define_group", args, pos) => {
@@ -109,7 +100,7 @@ fn collect_declarations(
             findings, "InvalidDefineGroup", "/library/define_group", "define_group needs group and parent",
             pos,
           )
-        } else if groups.any(g => g.name == name) {
+        } else if groups.contains(name) {
           add_finding(
             findings,
             "DuplicateDefineGroup",
@@ -118,7 +109,7 @@ fn collect_declarations(
             pos,
           )
         } else {
-          groups.push({ name, parent, })
+          groups[name] = parent
         }
       }
       _ => ()
@@ -201,8 +192,8 @@ fn inspect_format(
   group : Group,
   parent : String,
   path : String,
-  attrs : Array[UserAttribute],
-  groups : Array[UserGroup],
+  attrs : Map[String, Map[String, String]],
+  groups : Map[String, String],
   counts : Map[String, Int32],
   modes : Map[String, String],
   findings : Array[Finding],
@@ -211,7 +202,7 @@ fn inspect_format(
   counts[family] = counts.get(family).unwrap_or(0) + 1
   modes[family] = mode
   if family == "unclassified_extension" {
-    let defined = groups.any(g => g.name == group.kind)
+    let defined = groups.contains(group.kind)
     if !defined {
       add_finding(
         findings,
@@ -223,16 +214,15 @@ fn inspect_format(
       )
     }
   }
-  for definition in groups {
-    if definition.name == group.kind && definition.parent != parent {
-      add_finding(
-        findings,
-        "DefinedGroupParent",
-        path,
-        "declared parent is " + definition.parent,
-        group.position,
-      )
-    }
+  if groups.get(group.kind) is Some(declared_parent) &&
+    declared_parent != parent {
+    add_finding(
+      findings,
+      "DefinedGroupParent",
+      path,
+      "declared parent is " + declared_parent,
+      group.position,
+    )
   }
   for item in group.items {
     match item {
@@ -248,28 +238,26 @@ fn inspect_format(
           findings,
         )
       Attribute(name, atoms, pos) =>
-        for definition in attrs {
-          if definition.name == name {
-            if definition.parent != group.kind {
-              // Only diagnose scope if the name has no matching declaration here.
-              if !attrs.any(a => a.name == name && a.parent == group.kind) {
+        if attrs.get(name) is Some(parents) {
+          match parents.get(group.kind) {
+            Some(value_type) =>
+              if !attribute_value_valid(value_type, atoms) {
                 add_finding(
                   findings,
-                  "DefinedAttributeParent",
+                  "DefinedAttributeType",
                   path + "/" + name,
-                  "user attribute used outside declared group",
+                  "expected " + value_type,
                   pos,
                 )
               }
-            } else if !attribute_value_valid(definition.value_type, atoms) {
+            None =>
               add_finding(
                 findings,
-                "DefinedAttributeType",
+                "DefinedAttributeParent",
                 path + "/" + name,
-                "expected " + definition.value_type,
+                "user attribute used outside declared group",
                 pos,
               )
-            }
           }
         }
       Complex("include_file", args, pos) => {
@@ -287,7 +275,16 @@ fn inspect_format(
           pos,
         )
       }
-      _ => ()
+      Complex(name, _, pos) =>
+        if attrs.contains(name) {
+          add_finding(
+            findings,
+            "DefinedAttributeForm",
+            path + "/" + name,
+            "declared simple attributes require name : value;",
+            pos,
+          )
+        }
     }
   }
 }
@@ -300,8 +297,8 @@ pub fn compatibility_report(
   standard~ : StandardEdition = Liberty2017_06,
 ) -> CompatibilityReport raise LibertyError {
   ignore(write_liberty(root))
-  let attrs = []
-  let groups = []
+  let attrs : Map[String, Map[String, String]] = Map([])
+  let groups : Map[String, String] = Map([])
   let findings = []
   collect_declarations(root, attrs, groups, findings)
   findings.append(collect_standard_findings(root))

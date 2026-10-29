@@ -101,6 +101,10 @@ def main():
 
         # Exercise the new rules through the shipped CLI, not just direct API calls.
         cases = [
+            ('define(rank,cell,integer);cell(C){rank(1.5);}', "DefinedAttributeForm"),
+            ('type(T){bit_width:4;bit_from:3;downto:true;}cell(C){bus(D){bus_type:T;pin(D[4]){}}}', "StandardBusMember"),
+            ('type(T){bit_width:4;bit_from:1;downto:true;}', "StandardBusRange"),
+            ('type(T){bit_width:8;}cell(C){bus(D){bus_type:T;pin(D[-1]){}}}', "StandardBusMember"),
             ('lu_table_template(T){}cell(C){pin(Y){timing(){cell_rise(T){values("1");}}}}', "TableShape"),
             ('cell(C){latch(Q,QN){data_in:"0";}}', "StandardStateRequired"),
             ('cell(C){latch(Q,QN){clear:"0";preset:"1";}}', "StandardStateRequired"),

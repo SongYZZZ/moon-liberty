@@ -182,6 +182,14 @@ pub fn query_timing(
     )
   }
   let lookup = lookup_table(table, x, y?, policy~)
+  if ["rise_transition", "fall_transition"].contains(table_kind) &&
+    lookup.value < 0.0 {
+    raise failure(
+      "NegativeTransition",
+      "extrapolation produced a negative transition time",
+      table.position,
+    )
+  }
   let seconds = lookup.value * units.time_seconds
   if seconds.is_nan() || seconds.is_inf() {
     raise failure(
